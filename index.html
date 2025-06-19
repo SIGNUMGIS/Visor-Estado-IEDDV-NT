@@ -4,14 +4,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Visor GIS Colombia</title>
+    <title>Visor SIGNUM </title>
+    <!-- Favicon -->
+    <link rel="icon" href="favicon/favicon.ico" sizes="any">
+    <link rel="icon" href="favicon/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="favicon/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="favicon/favicon-16x16.png" sizes="16x16">
+    <link rel="manifest" href="favicon/site.webmanifest">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#ffffff">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="map"></div>
-    
+
     <!-- Mobile Controls -->
     <div class="mobile-controls">
         <button id="mobile-menu-btn" class="mobile-btn" type="button">
@@ -77,48 +87,70 @@
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="section-content compact">
-                <div class="layer-toggle">
+                <!-- <div class="layer-toggle">
                     <input type="checkbox" id="point-layer-toggle" checked>
                     <label for="point-layer-toggle">
                         <span class="layer-color point-color"></span>
                         Edificaciones
                     </label>
-                </div>
+                </div> -->
                 <div class="layer-toggle">
                     <input type="checkbox" id="polyline1-layer-toggle" checked>
                     <label for="polyline1-layer-toggle">
                         <span class="layer-color polyline1-color"></span>
-                        Ducto C1
+                        IEDDV Recorrido
                     </label>
                 </div>
                 <div class="layer-toggle">
                     <input type="checkbox" id="polyline2-layer-toggle" checked>
                     <label for="polyline2-layer-toggle">
                         <span class="layer-color polyline2-color"></span>
-                        Ducto C2
+                        IEDDV Estructuración
                     </label>
                 </div>
                 <div class="layer-toggle">
                     <input type="checkbox" id="polyline3-layer-toggle" checked>
                     <label for="polyline3-layer-toggle">
                         <span class="layer-color polyline3-color"></span>
-                        Ducto C3
+                        IEDDV Programado
+                    </label>
+                </div>
+
+                <div class="layer-toggle">
+                    <input type="checkbox" id="polyline4-layer-toggle" checked>
+                    <label for="polyline4-layer-toggle">
+                        <span class="layer-color polyline4-color"></span>
+                        NT Recorrido
                     </label>
                 </div>
                 <div class="layer-toggle">
+                    <input type="checkbox" id="polyline5-layer-toggle" checked>
+                    <label for="polyline5-layer-toggle">
+                        <span class="layer-color polyline5-color"></span>
+                        NT Estructuración
+                    </label>
+                </div>
+                <div class="layer-toggle">
+                    <input type="checkbox" id="polyline6-layer-toggle" checked>
+                    <label for="polyline6-layer-toggle">
+                        <span class="layer-color polyline6-color"></span>
+                        NT Programado
+                    </label>
+                </div>
+                <!-- <div class="layer-toggle">
                     <input type="checkbox" id="polyline4-layer-toggle" checked>
                     <label for="polyline4-layer-toggle">
                         <span class="layer-color polyline4-color"></span>
                         Ducto C4
                     </label>
-                </div>
-                <div class="layer-toggle">
+                </div> -->
+                <!-- <div class="layer-toggle">
                     <input type="checkbox" id="polygon-layer-toggle" checked>
                     <label for="polygon-layer-toggle">
                         <span class="layer-color polygon-color"></span>
                         Veredas
                     </label>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -128,13 +160,13 @@
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="section-content compact">
-                <div class="layer-toggle">
+                <!-- <div class="layer-toggle">
                     <input type="checkbox" id="point-labels-toggle">
                     <label for="point-labels-toggle">
                         <i class="fa-regular fa-plus point-label-icon"></i>
                         Etiquetas de Postes
                     </label>
-                </div>
+                </div> -->
                 <div class="layer-toggle">
                     <input type="checkbox" id="polyline-labels-toggle">
                     <label for="polyline-labels-toggle">
@@ -142,13 +174,13 @@
                         Etiquetas de Ducto
                     </label>
                 </div>
-                <div class="layer-toggle">
+                <!-- <div class="layer-toggle">
                     <input type="checkbox" id="polygon-labels-toggle">
                     <label for="polygon-labels-toggle">
                         <i class="fas fa-tag polygon-label-icon"></i>
                         Veredas
                     </label>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

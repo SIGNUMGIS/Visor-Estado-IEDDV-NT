@@ -1,5 +1,5 @@
 // Initialize the map centered on Colombia
-const map = L.map('map').setView([4.5709, -74.2973], 6);
+const map = L.map('map').setView([7.0456, -74.2973], 7);
 
 // Create panes for z-index control
 map.createPane('polygons');
@@ -42,10 +42,12 @@ const styles = {
             });
         }
     },
-    polyline1: { color: '#DE1414', weight: 4, opacity: 0.8, pane: 'polylines' },
-    polyline2: { color: '#5CEE0E', weight: 4, opacity: 0.8, pane: 'polylines' },
-    polyline3: { color: '#EE0ECC', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline1: { color: '#1df00a', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline2: { color: '#fac107', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline3: { color: '#e4a0d8', weight: 4, opacity: 0.8, pane: 'polylines' },
     polyline4: { color: '#0E30EE', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline5: { color: '#0ed4ee', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline6: { color: '#9c0eee', weight: 4, opacity: 0.8, pane: 'polylines' },
     polygon: { 
         fillColor: '#EDED0E', 
         weight: 1, 
@@ -62,6 +64,8 @@ const layers = {
     polyline2: L.layerGroup().addTo(map),
     polyline3: L.layerGroup().addTo(map),
     polyline4: L.layerGroup().addTo(map),
+    polyline5: L.layerGroup().addTo(map),
+    polyline6: L.layerGroup().addTo(map),
     polygon: L.layerGroup().addTo(map),
     pointLabels: L.layerGroup(),
     polylineLabels: L.layerGroup(),
@@ -146,12 +150,15 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
 }
 
 // Load GeoJSON data
-loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
-loadGeoJSON('geojs/Ducto_C1.geojson', layers.polyline1, styles.polyline1, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/Ducto_C2.geojson', layers.polyline2, styles.polyline2, 'TRM_RML', 'polyline');
-loadGeoJSON('geojs/Ducto C3.geojson', layers.polyline3, styles.polyline3, 'TRM_RML', 'polyline');
-loadGeoJSON('geojs/Ducto_Turno4_Adicional.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
-loadGeoJSON('geojs/VeredasT5.geojson', layers.polygon, styles.polygon, 'VEREDA', 'polygon');
+// loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
+loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV.geojson', layers.polyline1, styles.polyline1, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_IEDDV.geojson', layers.polyline2, styles.polyline2, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DUCTO_PROGRAMACION_IEDDV.geojson', layers.polyline3, styles.polyline3, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DUCTO_RECORRIDO_NT.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_NT.geojson', layers.polyline5, styles.polyline5, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DUCTO_PROGRAMACION_NT.geojson', layers.polyline6, styles.polyline6, 'TRM_RML', 'polyline');
+// loadGeoJSON('geojs/Ducto_Turno4_Adicional.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
+// loadGeoJSON('geojs/VeredasT5.geojson', layers.polygon, styles.polygon, 'VEREDA', 'polygon');
 
 // Update point icons on zoom
 map.on('zoomend', function() {
@@ -232,15 +239,18 @@ function setupToggle(id, layer) {
     });
 }
 
-setupToggle('point-layer-toggle', layers.point);
+// setupToggle('point-layer-toggle', layers.point);
 setupToggle('polyline1-layer-toggle', layers.polyline1);
 setupToggle('polyline2-layer-toggle', layers.polyline2);
 setupToggle('polyline3-layer-toggle', layers.polyline3);
 setupToggle('polyline4-layer-toggle', layers.polyline4);
-setupToggle('polygon-layer-toggle', layers.polygon);
-setupToggle('point-labels-toggle', layers.pointLabels);
+setupToggle('polyline5-layer-toggle', layers.polyline5);
+setupToggle('polyline6-layer-toggle', layers.polyline6);
+// setupToggle('polyline4-layer-toggle', layers.polyline4);
+// setupToggle('polygon-layer-toggle', layers.polygon);
+// setupToggle('point-labels-toggle', layers.pointLabels);
 setupToggle('polyline-labels-toggle', layers.polylineLabels);
-setupToggle('polygon-labels-toggle', layers.polygonLabels);
+// setupToggle('polygon-labels-toggle', layers.polygonLabels);
 
 // ==============================================
 // COLLAPSIBLE SECTIONS
