@@ -44,7 +44,7 @@ const styles = {
     },
     polyline1: { color: '#1df00a', weight: 4, opacity: 0.8, pane: 'polylines' },
     polyline2: { color: '#fac107', weight: 4, opacity: 0.8, pane: 'polylines' },
-    polyline3: { color: '#e4a0d8', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline3: { color: '#9c0eee', weight: 4, opacity: 0.8, pane: 'polylines' },
     polyline4: { color: '#0E30EE', weight: 4, opacity: 0.8, pane: 'polylines' },
     polyline5: { color: '#0ed4ee', weight: 4, opacity: 0.8, pane: 'polylines' },
     polyline6: { color: '#9c0eee', weight: 4, opacity: 0.8, pane: 'polylines' },
@@ -151,13 +151,17 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
 
 // Load GeoJSON data
 // loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
-loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV.geojson', layers.polyline1, styles.polyline1, 'TRM_RML', 'polyline');
+// AVANCE CONTRATO 2025
+/* loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV.geojson', layers.polyline1, styles.polyline1, 'TRM_RML', 'polyline');
 loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_IEDDV.geojson', layers.polyline2, styles.polyline2, 'TRM_RML', 'polyline');
 loadGeoJSON('geojs/DUCTO_PROGRAMACION_IEDDV.geojson', layers.polyline3, styles.polyline3, 'TRM_RML', 'polyline');
 loadGeoJSON('geojs/DUCTO_RECORRIDO_NT.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
 loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_NT.geojson', layers.polyline5, styles.polyline5, 'TRM_RML', 'polyline');
-loadGeoJSON('geojs/DUCTO_PROGRAMACION_NT.geojson', layers.polyline6, styles.polyline6, 'TRM_RML', 'polyline');
-// loadGeoJSON('geojs/Ducto_Turno4_Adicional.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DUCTO_PROGRAMACION_NT.geojson', layers.polyline6, styles.polyline6, 'TRM_RML', 'polyline'); */
+loadGeoJSON('geojs/DuctoC1.geojson', layers.polyline1, styles.polyline1, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DuctoC2.geojson', layers.polyline2, styles.polyline2, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DuctoC3.geojson', layers.polyline3, styles.polyline3, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DuctoC4.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
 // loadGeoJSON('geojs/VeredasT5.geojson', layers.polygon, styles.polygon, 'VEREDA', 'polygon');
 
 // Update point icons on zoom
@@ -244,8 +248,8 @@ setupToggle('polyline1-layer-toggle', layers.polyline1);
 setupToggle('polyline2-layer-toggle', layers.polyline2);
 setupToggle('polyline3-layer-toggle', layers.polyline3);
 setupToggle('polyline4-layer-toggle', layers.polyline4);
-setupToggle('polyline5-layer-toggle', layers.polyline5);
-setupToggle('polyline6-layer-toggle', layers.polyline6);
+// setupToggle('polyline5-layer-toggle', layers.polyline5);
+// setupToggle('polyline6-layer-toggle', layers.polyline6);
 // setupToggle('polyline4-layer-toggle', layers.polyline4);
 // setupToggle('polygon-layer-toggle', layers.polygon);
 // setupToggle('point-labels-toggle', layers.pointLabels);
