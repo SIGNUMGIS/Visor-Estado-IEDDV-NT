@@ -1,144 +1,113 @@
 // Initialize the map centered on Colombia
-const map = L.map('map').setView([4.5709, -74.2973], 6);
+const map = L.map('map').setView([7.0456, -74.2973], 7);
 
-// Add base map - Using OpenStreetMap as base
-// Define base maps
+// Create panes for z-index control
+map.createPane('polygons');
+map.createPane('polylines');
+map.createPane('points');
+map.createPane('labels');
+
+// Set z-index values
+map.getPane('polygons').style.zIndex = 200;
+map.getPane('polylines').style.zIndex = 400;
+map.getPane('points').style.zIndex = 600;
+map.getPane('labels').style.zIndex = 800;
+
+// Base maps
 const baseMaps = {
     "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; OpenStreetMap contributors',
+        pane: 'tilePane'
     }),
     "ESRI Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
+        attribution: 'Tiles &copy; Esri',
+        pane: 'tilePane'
     })
 };
 
 // Add default base map
 baseMaps["OpenStreetMap"].addTo(map);
 
+// Layer styles
+const styles = {
+    point: {
+        icon: function(zoomLevel) {
+            const size = Math.max(8, 14 - (15 - zoomLevel));
+            return L.divIcon({
+                className: 'custom-fa-marker',
+                html: `<i class="fa-regular fa-plus" style="font-size: ${size}px;"></i>`,
+                iconSize: [size, size],
+                iconAnchor: [size/2, size/2],
+                pane: 'points'
+            });
+        }
+    },
+    polyline1: { color: '#1df00a', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline2: { color: '#fac107', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline3: { color: '#9c0eee', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline4: { color: '#0E30EE', weight: 4, opacity: 0.8, pane: 'polylines' },
 
-// Custom icon for point layer (postes)
-const pointIcon = L.divIcon({
-    className: 'custom-fa-marker',  // Note the changed class name
-    html: '<i class="fa-regular fa-plus"></i>',
-    iconSize: [20, 20],            // Slightly larger for better visibility
-    iconAnchor: [10, 10],           // Center anchor
-    pane: 'points'
-});
-
-const polyline1Style = {
-    color: '#DE1414',
-    weight: 4,
-    opacity: 0.8,
-    pane: 'polylines'
-};
-
-// Custom style for second polyline layer (C2)
-const polyline2Style = {
-    color: '#5CEE0E',
-    weight: 4,
-    opacity: 0.8,
-    pane: 'polylines'
-};
-
-const polyline3Style = {
-    color: '#EE0ECC',
-    weight: 4,
-    opacity: 0.8,
-    pane: 'polylines'
-};
-
-const polyline4Style = {
-    color: '#0E30EE',
-    weight: 4,
-    opacity: 0.8,
-    pane: 'polylines'
-};
-
-// Custom style for polygon layer
-const polygonStyle = {
-    fillColor: '#EDED0E',
-    weight: 1,
-    opacity: 1,
-    color: '#EDBD0E',
-    fillOpacity: 0.3,
-    pane: 'polygons'  // for order control
+    polygon: { 
+        fillColor: '#EDED0E', 
+        weight: 1, 
+        color: '#EDBD0E',
+        fillOpacity: 0.3,
+        pane: 'polygons'
+    }
 };
 
 // Create layer groups
+const layers = {
+    point: L.layerGroup().addTo(map),
+    polyline1: L.layerGroup().addTo(map),
+    polyline2: L.layerGroup().addTo(map),
+    polyline3: L.layerGroup().addTo(map),
+    polyline4: L.layerGroup().addTo(map),
+    polygon: L.layerGroup().addTo(map),
+    pointLabels: L.layerGroup(),
+    polylineLabels: L.layerGroup(),
+    polygonLabels: L.layerGroup()
+};
 
-const pointLayer = L.layerGroup().addTo(map);
-const polyline1Layer = L.layerGroup().addTo(map);
-const polyline2Layer = L.layerGroup().addTo(map);
-const polyline3Layer = L.layerGroup().addTo(map);
-const polyline4Layer = L.layerGroup().addTo(map);
-const polygonLayer = L.layerGroup().addTo(map);
-const pointLabelsLayer = L.layerGroup()
-const polylineLabelsLayer = L.layerGroup()
-const polygonLabelsLayer = L.layerGroup()
-
-// Create panes for explicit z-index control
-map.createPane('polygons');
-map.createPane('polylines');
-map.createPane('points');
-
-// Set z-index values (higher numbers appear above lower numbers)
-map.getPane('polygons').style.zIndex = 200;
-map.getPane('polylines').style.zIndex = 400;
-map.getPane('points').style.zIndex = 600;
-// -------------------------------------------------------------------------------
-// Remove the static pointIcon constant and replace with a dynamic function
-function getPointIcon(zoomLevel) {
-    // Calculate size based on zoom level
-    const baseSize = 14; // Base size at zoom level 12
-    const size = Math.max(8, baseSize - (15 - zoomLevel)); // Adjust these values as needed
-    
-    return L.divIcon({
-        className: 'custom-fa-marker',
-        html: `<i class="fa-regular fa-plus" style="font-size: ${size}px;"></i>`,
-        iconSize: [size, size],
-        iconAnchor: [size/2, size/2],
-        popupAnchor: [0, -size/2]
-    });
-}
-
-// Store current point layers to update them on zoom
+// Store point layers for zoom updates
 const pointLayers = [];
 
-// Base map toggle control
-document.getElementById('base-street').addEventListener('change', function() {
+// Base map toggles
+document.getElementById('base-street')?.addEventListener('change', function() {
     if (this.checked) {
         map.removeLayer(baseMaps["ESRI Satellite"]);
         map.addLayer(baseMaps["OpenStreetMap"]);
     }
 });
 
-document.getElementById('base-satellite').addEventListener('change', function() {
+document.getElementById('base-satellite')?.addEventListener('change', function() {
     if (this.checked) {
         map.removeLayer(baseMaps["OpenStreetMap"]);
         map.addLayer(baseMaps["ESRI Satellite"]);
     }
 });
 
+// GeoJSON loader
 function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            // Clear previous data
             layer.clearLayers();
             
-            // Add new data with style
-            const geoJsonLayer = L.geoJSON(data, {
-                pointToLayer: function(feature, latlng) {
+            L.geoJSON(data, {
+                pointToLayer: (feature, latlng) => {
                     if (layerType === 'point') {
-                        return L.marker(latlng, { icon: pointIcon,
+                        const marker = L.marker(latlng, { 
+                            icon: styles.point.icon(map.getZoom()),
                             pane: 'points'
-                         });
+                        });
+                        pointLayers.push(marker);
+                        return marker;
                     }
                     return L.circleMarker(latlng, style);
                 },
                 style: style,
-                onEachFeature: function(feature, layer) {
-                    // Add popup with feature information
+                onEachFeature: (feature, layer) => {
                     if (feature.properties) {
                         let popupContent = '<div class="info"><h4>Información</h4>';
                         for (const prop in feature.properties) {
@@ -148,356 +117,124 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                         layer.bindPopup(popupContent);
                     }
                     
-                    // Add label if labelField is provided
-                    if (labelField && feature.properties && feature.properties[labelField]) {
-                        const label = L.marker(layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng(), {
+                    if (labelField && feature.properties?.[labelField]) {
+                        const position = layer.getBounds?.().getCenter() || layer.getLatLng();
+                        const labelColor = layerType === 'polygon' ? '#000307' : 
+                                         layerType === 'polyline' ? style.color : '#ff0000';
+                        
+                        const label = L.marker(position, {
                             icon: L.divIcon({
                                 className: 'map-label',
-                                html: `<div style="font-size: 12px; font-weight: bold; color: ${
-                                    layerType === 'polygon' ? '#000307' : 
-                                    layerType === 'polyline' ? '#ff0000' : 
-                                    '#ff0000'}; 
-                                    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;">${feature.properties[labelField]}</div>`,
-                                iconSize: [100, 20]
+                                html: `<div style="font-size:12px;font-weight:bold;color:${labelColor};
+                                      text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;">
+                                      ${feature.properties[labelField]}</div>`,
+                                iconSize: [100, 20],
+                                pane: 'labels'
                             }),
                             interactive: false
                         });
                         
-                        // Determine which label layer to use based on feature type
-                        let targetLabelLayer;
-                        if (layerType === 'polygon') {
-                            targetLabelLayer = polygonLabelsLayer;
-                        } else if (layerType === 'polyline') {
-                            targetLabelLayer = polylineLabelsLayer;
-                        } else {
-                            targetLabelLayer = pointLabelsLayer;
-                        }
+                        const labelLayer = layerType === 'polygon' ? layers.polygonLabels :
+                                        layerType === 'polyline' ? layers.polylineLabels :
+                                        layers.pointLabels;
                         
-                        // Store the label in the appropriate layer but don't add to map yet
-                        targetLabelLayer.addLayer(label);
-                        
-                        // Check if the corresponding toggle is checked
-                        const toggleId = layerType === 'polygon' ? 'polygon-labels-toggle' :
-                                       layerType === 'polyline' ? 'polyline-labels-toggle' :
-                                       'point-labels-toggle';
-                        
-                        // Add to map only if toggle is checked
-                        if (document.getElementById(toggleId)?.checked) {
-                            map.addLayer(targetLabelLayer);
-                        }
+                        labelLayer.addLayer(label);
                     }
                 }
-            });
-            
-            layer.addLayer(geoJsonLayer);
+            }).addTo(layer);
         })
-        .catch(error => {
-            console.error('Error loading GeoJSON:', error);
-        });
+        .catch(console.error);
 }
-// Add zoom event listener to update icons
+
+// Load GeoJSON data
+loadGeoJSON('geojs/C1.geojson', layers.polyline1, styles.polyline1, 'RML', 'polyline');
+loadGeoJSON('geojs/C2.geojson', layers.polyline2, styles.polyline2, 'RML', 'polyline');
+loadGeoJSON('geojs/C3.geojson', layers.polyline3, styles.polyline3, 'RML', 'polyline');
+loadGeoJSON('geojs/C4.geojson', layers.polyline4, styles.polyline4, 'RML', 'polyline');
+
+// Update point icons on zoom
 map.on('zoomend', function() {
-    const currentZoom = map.getZoom();
+    const zoom = map.getZoom();
     pointLayers.forEach(marker => {
-        marker.setIcon(getPointIcon(currentZoom));
-    });
-});
-// --------------------------------------------------------------------------------------------------------------------
-
-// Load sample data (replace with your actual GeoJSON files)
-
-// Point layer (e.g., postes)
-loadGeoJSON('geojs/Cor_D2.geojson', 
-           pointLayer, {color: '#ff0000'}, 'PK', 'point');
-
-// First polyline layer (e.g., main roads)
-loadGeoJSON('geojs/C1.geojson', 
-           polyline1Layer, polyline1Style, 'TRAMO', 'polyline');
-
-loadGeoJSON('geojs/C2.geojson', 
-           polyline2Layer, polyline2Style, 'TRM_RML', 'polyline');
-
-// Third polyline layer (e.g., rivers)
-loadGeoJSON('geojs/Ducto C3.geojson', 
-           polyline3Layer, polyline3Style, 'TRM_RML', 'polyline');
-
-// Fourth layer (e.g., rivers)
-loadGeoJSON('geojs/Adicional.geojson', 
-           polyline4Layer, polyline4Style, 'TRM_RML', 'polyline');
-
-// Polygon layer (e.g., departments of Colombia)
-loadGeoJSON('geojs/T5.geojson', 
-           polygonLayer, polygonStyle, 'VEREDA', 'polygon');
-
-
-// Layer control toggles
-
-document.getElementById('point-layer-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(pointLayer);
-    } else {
-        map.removeLayer(pointLayer);
-    }
-});
-
-document.getElementById('polyline1-layer-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(polyline1Layer);
-    } else {
-        map.removeLayer(polyline1Layer);
-    }
-});
-
-document.getElementById('polyline2-layer-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(polyline2Layer);
-    } else {
-        map.removeLayer(polyline2Layer);
-    }
-});
-
-document.getElementById('polyline3-layer-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(polyline3Layer);
-    } else {
-        map.removeLayer(polyline3Layer);
-    }
-});
-
-document.getElementById('polyline4-layer-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(polyline4Layer);
-    } else {
-        map.removeLayer(polyline4Layer);
-    }
-});
-
-document.getElementById('polygon-layer-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(polygonLayer);
-    } else {
-        map.removeLayer(polygonLayer);
-    }
-});
-
-// Label control toggles
-
-// Add point labels toggle (add this to your HTML first)
-document.getElementById('point-labels-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(pointLabelsLayer);
-    } else {
-        map.removeLayer(pointLabelsLayer);
-    }
-});
-
-document.getElementById('polyline-labels-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(polylineLabelsLayer);
-    } else {
-        map.removeLayer(polylineLabelsLayer);
-    }
-});
-
-// Add this event listener for polygon labels
-document.getElementById('polygon-labels-toggle').addEventListener('change', function(e) {
-    if (e.target.checked) {
-        map.addLayer(polygonLabelsLayer);
-    } else {
-        map.removeLayer(polygonLabelsLayer);
-    }
-});
-
-// Mobile Menu Toggle
-document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-    document.getElementById('control-panel').classList.toggle('active');
-});
-
-document.getElementById('close-panel-btn').addEventListener('click', function() {
-    document.getElementById('control-panel').classList.remove('active');
-});
-
-// Collapsible Sections
-// Responsive collapsible sections
-document.querySelectorAll('.collapsible .section-header').forEach(header => {
-    header.addEventListener('click', function() {
-        this.parentElement.classList.toggle('active');
-        const icon = this.querySelector('i');
-        icon.classList.toggle('fa-chevron-down');
-        icon.classList.toggle('fa-chevron-up');
+        marker.setIcon(styles.point.icon(zoom));
     });
 });
 
-// Close panel when clicking outside
-document.addEventListener('click', function(e) {
-    const panel = document.getElementById('control-panel');
-    if (!panel.contains(e.target) && !e.target.closest('.mobile-controls')) {
+// ==============================================
+// PANEL CONTROL FUNCTIONS
+// ==============================================
+
+const panel = document.getElementById('control-panel');
+const closeBtn = document.getElementById('close-panel-btn');
+const menuBtn = document.getElementById('mobile-menu-btn');
+
+// Function to toggle panel visibility with animation
+function togglePanel(show) {
+    if (show) {
+        // Show panel - slide in from left
+        panel.style.transform = 'translateX(0)';
+        panel.style.display = 'block';
+        panel.classList.add('active');
+    } else {
+        // Hide panel - slide out to left
+        panel.style.transform = 'translateX(-100%)';
+        
+        // After animation completes, hide completely
+        setTimeout(() => {
+            panel.style.display = 'none';
+        }, 300); // Match this with your CSS transition duration
+        
         panel.classList.remove('active');
     }
+}
+
+// Initialize panel state
+togglePanel(false); // Start with panel hidden
+
+// Close button click handler
+closeBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    togglePanel(false); // Hide panel
 });
 
+// Menu button click handler
+menuBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    togglePanel(true); // Show panel
+});
 
-
-// Measurement tool implementation
-let measureControl = {
-    isMeasuring: false,
-    currentPolyline: null,
-    totalDistance: 0,
-    measurePoints: [],
-    measureTooltips: [],
-
-    start: function() {
-        // Clear any previous measurements
-        this.clearMeasurement();
-        
-        this.isMeasuring = true;
-        document.getElementById('measure-toggle').classList.add('active');
-        document.getElementById('measure-result').style.display = 'block';
-        document.getElementById('measure-value').textContent = '0';
-        
-        // Start with first click
-        map.on('click', this.handleMeasureClick);
-    },
-
-    stop: function() {
-        this.isMeasuring = false;
-        document.getElementById('measure-toggle').classList.remove('active');
-        document.getElementById('measure-result').style.display = 'none';
-        map.off('click', this.handleMeasureClick);
-        this.clearMeasurement();
-    },
-
-    handleMeasureClick: function(e) {
-        if (!measureControl.isMeasuring) return;
-        
-        // Add point to current measurement
-        measureControl.measurePoints.push(e.latlng);
-        
-        // Update or create polyline
-        if (measureControl.measurePoints.length > 1) {
-            if (!measureControl.currentPolyline) {
-                measureControl.currentPolyline = L.polyline([], {
-                    color: 'red',
-                    weight: 3
-                }).addTo(map);
-            }
-            measureControl.currentPolyline.setLatLngs(measureControl.measurePoints);
-            
-            // Calculate and display distance
-            const lastSegmentDistance = measureControl.measurePoints[measureControl.measurePoints.length-2]
-                .distanceTo(measureControl.measurePoints[measureControl.measurePoints.length-1]) / 1000;
-            measureControl.totalDistance += lastSegmentDistance;
-            
-            document.getElementById('measure-value').textContent = measureControl.totalDistance.toFixed(2);
-            
-            // Add tooltip for this segment
-            const tooltip = L.tooltip({
-                permanent: true,
-                direction: 'top',
-                className: 'measure-tooltip',
-                content: `${lastSegmentDistance.toFixed(2)} km<br>Total: ${measureControl.totalDistance.toFixed(2)} km`
-            }).setLatLng(e.latlng);
-            
-            tooltip.addTo(map);
-            measureControl.measureTooltips.push(tooltip);
-        }
-    },
-
-    clearMeasurement: function() {
-        // Remove existing polyline
-        if (this.currentPolyline) {
-            map.removeLayer(this.currentPolyline);
-            this.currentPolyline = null;
-        }
-        
-        // Remove all tooltips
-        this.measureTooltips.forEach(tooltip => map.removeLayer(tooltip));
-        this.measureTooltips = [];
-        
-        // Reset measurements
-        this.measurePoints = [];
-        this.totalDistance = 0;
-    }
-};
-
-// Toggle measurement tool
-document.getElementById('measure-toggle').addEventListener('click', function() {
-    if (measureControl.isMeasuring) {
-        measureControl.stop();
-    } else {
-        measureControl.start();
+// Close when clicking outside panel
+document.addEventListener('click', function(e) {
+    if (panel.classList.contains('active') && 
+        !panel.contains(e.target) && 
+        e.target !== menuBtn && 
+        !menuBtn.contains(e.target)) {
+        togglePanel(false);
     }
 });
 
-// Add right-click to finish measurement
-map.on('contextmenu', function() {
-    if (measureControl.isMeasuring) {
-        measureControl.stop();
+// Close with ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && panel.classList.contains('active')) {
+        togglePanel(false);
     }
 });
 
-// Coordinate display functionality
-let coordFormat = 'dms'; // Default format
+// ==============================================
+// LAYER TOGGLES
+// ==============================================
 
-// Convert decimal degrees to DMS format
-function decimalToDMS(decimal, isLongitude) {
-    const absolute = Math.abs(decimal);
-    const degrees = Math.floor(absolute);
-    const minutesNotTruncated = (absolute - degrees) * 60;
-    const minutes = Math.floor(minutesNotTruncated);
-    const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(2);
-    
-    let direction;
-    if (isLongitude) {
-        direction = decimal >= 0 ? 'E' : 'W';
-    } else {
-        direction = decimal >= 0 ? 'N' : 'S';
-    }
-    
-    return `${degrees}°${minutes.toString().padStart(2, '0')}'${seconds.toString().padStart(5, '0')}"${direction}`;
-}
-
-// Format coordinates based on current format selection
-function formatCoordinate(value, isLongitude) {
-    if (coordFormat === 'decimal') {
-        return value.toFixed(6) + '°';
-    } else { // DMS
-        return decimalToDMS(value, isLongitude);
-    }
-}
-
-// Update coordinate display on mouse move
-function updateCoordinateDisplay(latlng) {
-    const lat = latlng.lat;
-    const lng = latlng.lng;
-    
-    document.getElementById('latitude').textContent = formatCoordinate(lat, false);
-    document.getElementById('longitude').textContent = formatCoordinate(lng, true);
-}
-
-// Initialize coordinate display
-function initCoordinateDisplay() {
-    // Set initial position (center of map)
-    updateCoordinateDisplay(map.getCenter());
-    
-    // Update on mouse move
-    map.on('mousemove', function(e) {
-        updateCoordinateDisplay(e.latlng);
-    });
-    
-    // Reset when mouse leaves map
-    map.on('mouseout', function() {
-        updateCoordinateDisplay(map.getCenter());
-    });
-    
-    // Handle format change
-    document.getElementById('coord-format').addEventListener('change', function(e) {
-        coordFormat = e.target.value;
-        updateCoordinateDisplay(map.getCenter());
+function setupToggle(id, layer) {
+    document.getElementById(id)?.addEventListener('change', (e) => {
+        e.target.checked ? map.addLayer(layer) : map.removeLayer(layer);
     });
 }
 
-// Initialize when map is ready
-map.whenReady(initCoordinateDisplay);
+setupToggle('polyline1-layer-toggle', layers.polyline1);
+setupToggle('polyline2-layer-toggle', layers.polyline2);
+setupToggle('polyline3-layer-toggle', layers.polyline3);
+setupToggle('polyline4-layer-toggle', layers.polyline4);
+setupToggle('polyline-labels-toggle', layers.polylineLabels);
+// setupToggle('polygon-labels-toggle', layers.polygonLabels);
 
-legend.addTo(map);

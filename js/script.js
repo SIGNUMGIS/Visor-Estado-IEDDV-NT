@@ -109,8 +109,36 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                     }
                     return L.circleMarker(latlng, style);
                 },
+
+                // Implement MouseOver
                 style: style,
                 onEachFeature: (feature, layer) => {
+                    // SIMPLE HOVER EFFECT
+                    layer.on('mouseover', function() {
+                        this.setStyle({
+                            weight: style.weight + 1,
+                            opacity: 1
+                        });
+                        this.bringToFront();
+                    });
+                    
+                    layer.on('mouseout', function() {
+                        layer.setStyle(style);
+                    });
+
+                    // USER-FRIENDLY TOOLTIP (show only 1 field)
+                    if (feature.properties?.TRM_RML) { // Use your most relevant field
+                        layer.bindTooltip(
+                            feature.properties.TRM_RML, 
+                            { 
+                                direction: 'top',
+                                sticky: true, // Follows mouse slightly
+                                className: 'friendly-tooltip'
+                            }
+                        );
+                    }
+                    // END OF NEW MOUSEOVER CODE
+
                     if (feature.properties) {
                         let popupContent = '<div class="info"><h4>Información</h4>';
                         for (const prop in feature.properties) {
