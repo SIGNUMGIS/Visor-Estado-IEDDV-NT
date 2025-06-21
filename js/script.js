@@ -111,6 +111,47 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                 },
                 style: style,
                 onEachFeature: (feature, layer) => {
+
+                    // Add mouseover funtion
+                    // Highlight style for mouseover
+                    const highlightStyle = {
+                        weight: style.weight + 2, // Make line thicker
+                        color: style.color,
+                        opacity: 1, // Full opacity
+                        dashArray: '' // Remove any dashes
+                    };
+                    
+                    // Mouseover event
+                    layer.on('mouseover', function(e) {
+                        this.setStyle(highlightStyle);
+                        
+                        // Bring to front
+                        this.bringToFront();
+                        
+                        // Optional: Show tooltip
+                        if (feature.properties) {
+                            layer.bindTooltip(
+                                Object.entries(feature.properties)
+                                    .map(([key, value]) => `<b>${key}:</b> ${value}`)
+                                    .join('<br>'),
+                                { 
+                                    direction: 'top',
+                                    permanent: false,
+                                    className: 'custom-tooltip'
+                                }
+                            ).openTooltip();
+                        }
+                    });
+                    
+                    // Mouseout event - reset to original style
+                    layer.on('mouseout', function(e) {
+                        layer.setStyle(style);
+                        
+                        // Optional: Close tooltip
+                        layer.unbindTooltip();
+                    });
+                    // End mouseover funtion
+
                     if (feature.properties) {
                         let popupContent = '<div class="info"><h4>Información</h4>';
                         for (const prop in feature.properties) {

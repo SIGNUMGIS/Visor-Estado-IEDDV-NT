@@ -406,3 +406,18 @@ body {
   height: auto !important;
   display: block;
 }
+/* Add mouseover funtion */
+/* Custom tooltip styling */
+.custom-tooltip {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
+}
+
+.custom-tooltip::before {
+    border-bottom-color: rgba(0, 0, 0, 0.2);
+}
