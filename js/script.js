@@ -113,6 +113,7 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                 onEachFeature: (feature, layer) => {
 
                     // Add mouseover funtion
+                    
                     // Highlight style for mouseover
                     const highlightStyle = {
                         weight: style.weight + 2, // Make line thicker
