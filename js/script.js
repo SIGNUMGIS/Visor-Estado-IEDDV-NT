@@ -72,8 +72,21 @@ const layers = {
     polygonLabels: L.layerGroup()
 };
 
-// Store point layers for zoom updates
-const pointLayers = [];
+
+
+// Función para construir el índice de búsqueda
+function buildSearchIndex(features) {
+    searchIndex = features.flatMap(feature => {
+        if (!feature.properties) return [];
+        
+        return Object.entries(feature.properties).map(([key, value]) => ({
+            feature,
+            key,
+            value: String(value).toLowerCase(),
+            layerType: feature.layerType
+        }));
+    });
+}
 
 // Base map toggles
 document.getElementById('base-street')?.addEventListener('change', function() {
@@ -90,6 +103,11 @@ document.getElementById('base-satellite')?.addEventListener('change', function()
     }
 });
 
+// Store point layers for zoom updates
+const pointLayers = [];
+let allFeatures = []; // Almacenará todas las características para búsqueda
+let searchIndex = []; // <-- Añade esta línea
+
 // GeoJSON loader
 function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
     fetch(url)
@@ -97,7 +115,7 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
         .then(data => {
             layer.clearLayers();
             
-            L.geoJSON(data, {
+            const geoJSONLayer = L.geoJSON(data, {
                 pointToLayer: (feature, latlng) => {
                     if (layerType === 'point') {
                         const marker = L.marker(latlng, { 
@@ -105,6 +123,12 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                             pane: 'points'
                         });
                         pointLayers.push(marker);
+
+                        // Almacenar feature para búsqueda
+                        feature.layerType = 'point';
+                        feature.layer = marker;
+                        allFeatures.push(feature);
+
                         return marker;
                     }
                     return L.circleMarker(latlng, style);
@@ -112,6 +136,45 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                 style: style,
                 onEachFeature: (feature, layer) => {
 
+                    // add Search Funcionality
+                    // Almacenar feature para búsqueda (excepto puntos que ya se manejan arriba)
+                    if (layerType !== 'point') {
+                        feature.layerType = layerType;
+                        feature.layer = layer;
+                        allFeatures.push(feature);
+                    }
+                    
+                    if (feature.properties) {
+                        let popupContent = '<div class="info"><h4>Información</h4>';
+                        for (const prop in feature.properties) {
+                            popupContent += `<b>${prop}:</b> ${feature.properties[prop]}<br>`;
+                        }
+                        popupContent += '</div>';
+                        layer.bindPopup(popupContent);
+                    }
+                    
+                    if (labelField && feature.properties?.[labelField]) {
+                        const position = layer.getBounds?.().getCenter() || layer.getLatLng();
+                        const labelColor = layerType === 'polygon' ? '#000307' : 
+                                         layerType === 'polyline' ? style.color : '#ff0000';
+                        
+                        const label = L.marker(position, {
+                            icon: L.divIcon({
+                                className: 'map-label',
+                                html: `<div style="font-size:12px;font-weight:bold;color:${labelColor};
+                                      text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;">
+                                      ${feature.properties[labelField]}</div>`,
+                                iconSize: [100, 20],
+                                pane: 'labels'
+                            }),
+                            interactive: false
+                        });
+                        
+                        const labelLayer = layerType === 'polygon' ? layers.polygonLabels :
+                                        layerType === 'polyline' ? layers.polylineLabels :
+                                        layers.pointLabels;
+                        labelLayer.addLayer(label);
+                    }
                     // Add mouseover funtion
                     
                     // Highlight style for mouseover
@@ -187,6 +250,8 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                     }
                 }
             }).addTo(layer);
+            // Reconstruir el índice después de cargar nuevos datos
+            buildSearchIndex(allFeatures); 
         })
         .catch(console.error);
 }
@@ -208,6 +273,176 @@ map.on('zoomend', function() {
     pointLayers.forEach(marker => {
         marker.setIcon(styles.point.icon(zoom));
     });
+});
+
+// ==============================================
+// SEARCH FUNCTIONALITY
+// ==============================================
+
+const searchInput = document.getElementById('search-input');
+const searchButton = document.getElementById('search-button');
+const searchResults = document.getElementById('search-results');
+let searchTimeout; // <-- Añade esta línea aquí
+
+// Event listeners para la búsqueda
+searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout); // <-- Modifica este listener
+    searchTimeout = setTimeout(() => {
+        searchFeatures(e.target.value);
+    }, 300);
+});
+
+// Función para buscar en las características
+function searchFeatures(query) {
+    if (!query || query.length < 2) {
+        searchResults.style.display = 'none';
+        return;
+    }
+
+    // Mostrar mensaje de carga
+    searchResults.innerHTML = '<div class="search-loading">Buscando...</div>';
+    searchResults.style.display = 'block';
+
+    // Retrasar la búsqueda para permitir que se muestre el mensaje
+    setTimeout(() => {
+        const resultsMap = new Map();
+        const queryLower = query.toLowerCase();
+        
+        searchIndex.forEach(item => {
+            if (item.value.includes(queryLower)) {
+                resultsMap.set(item.feature, {
+                    feature: item.feature,
+                    property: item.key,
+                    value: item.feature.properties[item.key],
+                    layerType: item.layerType
+                });
+            }
+        });
+
+        displayResults(Array.from(resultsMap.values()));
+    }, 0);
+}
+
+// Mostrar resultados en el dropdown
+function displayResults(results) {
+    searchResults.innerHTML = '';
+    
+    if (results.length === 0) {
+        const noResults = document.createElement('div');
+        noResults.className = 'search-result-item';
+        noResults.textContent = 'No se encontraron resultados';
+        searchResults.appendChild(noResults);
+    } else {
+        results.slice(0, 10).forEach(result => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            
+            // Mostrar el valor de la propiedad que coincidió
+            item.textContent = result.value;
+            
+            // Almacenar referencia al feature para cuando se seleccione
+            item.dataset.featureIndex = allFeatures.indexOf(result.feature);
+            
+            item.addEventListener('click', () => {
+                selectResult(result.feature);
+            });
+            
+            searchResults.appendChild(item);
+        });
+    }
+    
+    searchResults.style.display = results.length > 0 ? 'block' : 'none';
+}
+
+// Seleccionar un resultado y centrar el mapa en él
+function selectResult(feature) {
+    // Limpiar estilos anteriores
+    allFeatures.forEach(f => {
+        if (f.layer.setStyle) {
+            f.layer.setStyle(styles[f.layerType] || {});
+        }
+    });
+
+    // Resaltar el feature seleccionado
+    if (feature.layer.setStyle) {
+        feature.layer.setStyle({
+            color: '#FF00FF',
+            weight: 5,
+            fillOpacity: 0.7
+        });
+        
+        // Quitar el resaltado después de 5 segundos
+        setTimeout(() => {
+            feature.layer.setStyle(styles[feature.layerType] || {});
+        }, 5000);
+    }
+    searchResults.style.display = 'none';
+    searchInput.value = ''; // Opcional: limpiar el input después de seleccionar
+    
+    let latlng;
+    
+    // Obtener la posición según el tipo de capa
+    if (feature.layerType === 'point') {
+        latlng = feature.layer.getLatLng();
+    } else {
+        // Para polígonos y polilíneas, usar el centro del bounds
+        latlng = feature.layer.getBounds().getCenter();
+    }
+    
+    // Centrar el mapa y abrir el popup si existe
+    map.setView(latlng, 15);
+    
+    if (feature.layer.getPopup) {
+        feature.layer.openPopup();
+    }
+}
+
+// Event listeners para la búsqueda
+searchInput.addEventListener('input', (e) => {
+    searchFeatures(e.target.value);
+});
+
+searchButton.addEventListener('click', () => {
+    searchFeatures(searchInput.value);
+});
+
+// Cerrar los resultados cuando se hace clic fuera
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-control')) {
+        searchResults.style.display = 'none';
+    }
+});
+
+// Permitir navegación con teclado en los resultados
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+        const items = searchResults.querySelectorAll('.search-result-item');
+        if (items.length === 0) return;
+        
+        let currentIndex = -1;
+        
+        // Encontrar el ítem actualmente seleccionado
+        items.forEach((item, index) => {
+            if (item.classList.contains('selected')) {
+                currentIndex = index;
+                item.classList.remove('selected');
+            }
+        });
+        
+        if (e.key === 'ArrowDown') {
+            currentIndex = (currentIndex + 1) % items.length;
+        } else if (e.key === 'ArrowUp') {
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+        } else if (e.key === 'Enter' && currentIndex !== -1) {
+            items[currentIndex].click();
+            return;
+        }
+        
+        if (currentIndex >= 0) {
+            items[currentIndex].classList.add('selected');
+            items[currentIndex].scrollIntoView({ block: 'nearest' });
+        }
+    }
 });
 
 // ==============================================
