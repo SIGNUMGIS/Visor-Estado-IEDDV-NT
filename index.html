@@ -65,6 +65,52 @@
                         <span>Distancia total:</span> <span id="measure-value">0</span> km
                     </div>
                 </div>
+                <!-- Dashboard Statistics -->
+                <div class="layer-toggle">
+                    <button id="stats-toggle" class="control-btn" type="button">
+                        <i class="fas fa-chart-bar"></i> Estadísticas
+                    </button>
+                    <div id="stats-panel" class="stats-panel">
+                        <div class="stats-filters">
+                            <select id="stats-layer-select">
+                                <option value="all">Todas las capas</option>
+                                <option value="polyline1">IEDDV Recorrido</option>
+                                <option value="polyline2">IEDDV Estructuración</option>
+                                <option value="polyline3">IEDDV Programado</option>
+                                <option value="polyline4">NT Recorrido</option>
+                                <option value="polyline5">NT Estructuración</option>
+                                <option value="polyline6">NT Programado</option>
+                            </select>
+                            <select id="stats-field-select">
+                                <option value="GASODUCTO">GASODUCTO</option>
+                                <option value="DISTRITO">DISTRITO</option>
+                                <option value="TRAMO">TRAMO</option>
+                            </select>
+                            <div class="stats-filters">
+                                <!-- <select id="stats-layer-select">
+                                    <option value="all">Todas las capas</option>
+                                    <option value="CENTRO - ORIENTE">CENTRO - ORIENTE</option>
+                                    <option value="SUR DE BOLIVAR">SUR DE BOLIVAR</option> -->
+                                    <!-- <option value="polyline3">IEDDV Programado</option>
+                                    <option value="polyline4">NT Recorrido</option>
+                                    <option value="polyline5">NT Estructuración</option>
+                                    <option value="polyline6">NT Programado</option> -->
+                                <!-- </select> -->
+                                <!-- <select id="stats-field-select">
+                                    <option value="CENTRO - ORIENTE">CENTRO - ORIENTE</option>
+                                    <option value="SUR DE BOLIVAR">SUR DE BOLIVAR</option> -->
+                                    <!-- <option value="TRAMO">Tramo</option> -->
+                                <!-- </select> -->
+                                <input type="text" id="attribute-filter" placeholder="Filtrar por valor" list="attribute-suggestions" style="width: 200px;" />
+                                <datalist id="attribute-suggestions"></datalist>
+                                <button id="apply-stats-btn">Aplicar</button>
+                                <button id="export-stats-btn" title="Exportar a Excel"><i class="fas fa-file-export"></i></button>
+                            </div>
+                        </div>
+                        <div id="stats-summary"></div>
+                        <canvas id="stats-chart" height="180"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -206,7 +252,9 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>

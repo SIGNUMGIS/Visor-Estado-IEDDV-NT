@@ -108,23 +108,25 @@ const pointLayers = [];
 let allFeatures = []; // Almacenará todas las características para búsqueda
 let searchIndex = []; // <-- Añade esta línea
 
-// GeoJSON loader
+// Dashboard
+const allPolylineFeatures = [];
+// const allFeatures = [];
+
 function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
     fetch(url)
         .then(response => response.json())
         .then(data => {
             layer.clearLayers();
-            
+
             const geoJSONLayer = L.geoJSON(data, {
                 pointToLayer: (feature, latlng) => {
                     if (layerType === 'point') {
-                        const marker = L.marker(latlng, { 
+                        const marker = L.marker(latlng, {
                             icon: styles.point.icon(map.getZoom()),
                             pane: 'points'
                         });
                         pointLayers.push(marker);
 
-                        // Almacenar feature para búsqueda
                         feature.layerType = 'point';
                         feature.layer = marker;
                         allFeatures.push(feature);
@@ -135,15 +137,15 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                 },
                 style: style,
                 onEachFeature: (feature, layer) => {
+                    layer.feature = feature;
+                    feature.layer = layer;
+                    feature.layerType = layerType;
+                    allFeatures.push(feature);
 
-                    // add Search Funcionality
-                    // Almacenar feature para búsqueda (excepto puntos que ya se manejan arriba)
-                    if (layerType !== 'point') {
-                        feature.layerType = layerType;
-                        feature.layer = layer;
-                        allFeatures.push(feature);
+                    if (layerType === 'polyline') {
+                        allPolylineFeatures.push(feature);
                     }
-                    
+
                     if (feature.properties) {
                         let popupContent = '<div class="info"><h4>Información</h4>';
                         for (const prop in feature.properties) {
@@ -152,12 +154,12 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                         popupContent += '</div>';
                         layer.bindPopup(popupContent);
                     }
-                    
+
                     if (labelField && feature.properties?.[labelField]) {
                         const position = layer.getBounds?.().getCenter() || layer.getLatLng();
-                        const labelColor = layerType === 'polygon' ? '#000307' : 
+                        const labelColor = layerType === 'polygon' ? '#000307' :
                                          layerType === 'polyline' ? style.color : '#ff0000';
-                        
+
                         const label = L.marker(position, {
                             icon: L.divIcon({
                                 className: 'map-label',
@@ -169,36 +171,30 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                             }),
                             interactive: false
                         });
-                        
+
                         const labelLayer = layerType === 'polygon' ? layers.polygonLabels :
                                         layerType === 'polyline' ? layers.polylineLabels :
                                         layers.pointLabels;
                         labelLayer.addLayer(label);
                     }
-                    // Add mouseover funtion
-                    
-                    // Highlight style for mouseover
+
                     const highlightStyle = {
-                        weight: style.weight + 2, // Make line thicker
+                        weight: style.weight + 2,
                         color: style.color,
-                        opacity: 1, // Full opacity
-                        dashArray: '' // Remove any dashes
+                        opacity: 1,
+                        dashArray: ''
                     };
-                    
-                    // Mouseover event
-                    layer.on('mouseover', function(e) {
+
+                    layer.on('mouseover', function (e) {
                         this.setStyle(highlightStyle);
-                        
-                        // Bring to front
                         this.bringToFront();
-                        
-                        // Optional: Show tooltip
+
                         if (feature.properties) {
                             layer.bindTooltip(
                                 Object.entries(feature.properties)
                                     .map(([key, value]) => `<b>${key}:</b> ${value}`)
                                     .join('<br>'),
-                                { 
+                                {
                                     direction: 'top',
                                     permanent: false,
                                     className: 'custom-tooltip'
@@ -206,64 +202,32 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                             ).openTooltip();
                         }
                     });
-                    
-                    // Mouseout event - reset to original style
-                    layer.on('mouseout', function(e) {
+
+                    layer.on('mouseout', function (e) {
                         layer.setStyle(style);
-                        
-                        // Optional: Close tooltip
                         layer.unbindTooltip();
                     });
-                    // End mouseover funtion
-
-                    if (feature.properties) {
-                        let popupContent = '<div class="info"><h4>Información</h4>';
-                        for (const prop in feature.properties) {
-                            popupContent += `<b>${prop}:</b> ${feature.properties[prop]}<br>`;
-                        }
-                        popupContent += '</div>';
-                        layer.bindPopup(popupContent);
-                    }
-                    
-                    if (labelField && feature.properties?.[labelField]) {
-                        const position = layer.getBounds?.().getCenter() || layer.getLatLng();
-                        const labelColor = layerType === 'polygon' ? '#000307' : 
-                                         layerType === 'polyline' ? style.color : '#ff0000';
-                        
-                        const label = L.marker(position, {
-                            icon: L.divIcon({
-                                className: 'map-label',
-                                html: `<div style="font-size:12px;font-weight:bold;color:${labelColor};
-                                      text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;">
-                                      ${feature.properties[labelField]}</div>`,
-                                iconSize: [100, 20],
-                                pane: 'labels'
-                            }),
-                            interactive: false
-                        });
-                        
-                        const labelLayer = layerType === 'polygon' ? layers.polygonLabels :
-                                        layerType === 'polyline' ? layers.polylineLabels :
-                                        layers.pointLabels;
-                        
-                        labelLayer.addLayer(label);
-                    }
                 }
-            }).addTo(layer);
-            // Reconstruir el índice después de cargar nuevos datos
-            buildSearchIndex(allFeatures); 
+            });
+
+            geoJSONLayer.eachLayer(l => {
+                layer.addLayer(l);
+            });
+
+            buildSearchIndex(allFeatures);
         })
         .catch(console.error);
 }
 
+
 // Load GeoJSON data
 // loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
 loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV_20250702.geojson', layers.polyline1, styles.polyline1, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_IEDDV.geojson', layers.polyline2, styles.polyline2, 'TRM_RML', 'polyline');
-loadGeoJSON('geojs/DUCTO_PROGRAMACION_IEDDV.geojson', layers.polyline3, styles.polyline3, 'TRM_RML', 'polyline');
-loadGeoJSON('geojs/DUCTO_RECORRIDO_NT_20250702.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
-loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_NT.geojson', layers.polyline5, styles.polyline5, 'TRM_RML', 'polyline');
-loadGeoJSON('geojs/DUCTO_PROGRAMACION_NT.geojson', layers.polyline6, styles.polyline6, 'TRM_RML', 'polyline');
+loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_IEDDV.geojson', layers.polyline2, styles.polyline2, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/DUCTO_PROGRAMACION_IEDDV.geojson', layers.polyline3, styles.polyline3, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/DUCTO_RECORRIDO_NT_20250702.geojson', layers.polyline4, styles.polyline4, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_NT.geojson', layers.polyline5, styles.polyline5, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/DUCTO_PROGRAMACION_NT.geojson', layers.polyline6, styles.polyline6, 'TRAMO', 'polyline');
 // loadGeoJSON('geojs/Ducto_Turno4_Adicional.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
 // loadGeoJSON('geojs/VeredasT5.geojson', layers.polygon, styles.polygon, 'VEREDA', 'polygon');
 
@@ -647,6 +611,117 @@ map.on('contextmenu', function() {
         measureControl.stop();
     }
 });
+
+// ==============================================
+// Statistics Dashboards
+// ==============================================
+
+const statsControl = {
+    calculate: function () {
+        const layer = document.getElementById('stats-layer-select').value;
+        const groupField = document.getElementById('stats-field-select').value;
+        const attributeFilter = document.getElementById('attribute-filter').value.trim().toLowerCase();
+        const minLength = parseFloat(document.getElementById('min-length')?.value) || 0;
+        const maxLength = parseFloat(document.getElementById('max-length')?.value) || Infinity;
+
+        let features = layer === 'all'
+            ? allPolylineFeatures
+            : layers[layer].getLayers().map(l => l.feature).filter(f => f);
+
+        const result = {};
+        let total = 0;
+
+        for (const feat of features) {
+            if (!feat?.properties) continue;
+
+            if (attributeFilter) {
+                const values = Object.values(feat.properties).map(v => String(v).toLowerCase());
+                const match = values.some(v => v.includes(attributeFilter));
+                if (!match) continue;
+            }
+
+            const length = parseFloat(feat.properties.LONGITUD) || 0;
+            if (length < minLength || length > maxLength) continue;
+
+            const group = feat.properties[groupField] || 'Sin valor';
+            if (!result[group]) {
+                result[group] = { count: 0, length: 0 };
+            }
+
+            result[group].count++;
+            result[group].length += length;
+            total += length;
+        }
+
+        const container = document.getElementById('stats-summary');
+        container.innerHTML = `<h4>Resumen por ${groupField}</h4>
+          <p>Total elementos: ${Object.values(result).reduce((s, r) => s + r.count, 0)}</p>
+          <p>Longitud total: ${total.toFixed(2)} km</p>`;
+
+        for (const [key, val] of Object.entries(result)) {
+            const avg = val.length / val.count;
+            const percent = (val.length * 100 / total).toFixed(1);
+
+            container.innerHTML += `<div class='group-stats'>
+              <h5>${key}</h5>
+              <p>Cantidad: ${val.count}</p>
+              <p>Longitud total: ${val.length.toFixed(2)} km</p>
+              <p>Promedio: ${avg.toFixed(2)} km</p>
+              <p>% del total: ${percent}%</p>
+            </div>`;
+        }
+
+        this.exportData = result;
+    },
+
+    exportToExcel: function () {
+        const ws_data = [
+            ['Grupo', 'Cantidad', 'Longitud total (km)', 'Promedio (km)']
+        ];
+
+        for (const [key, val] of Object.entries(this.exportData)) {
+            ws_data.push([
+                key,
+                val.count,
+                parseFloat(val.length.toFixed(2)),
+                parseFloat((val.length / val.count).toFixed(2))
+            ]);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Estadísticas');
+        XLSX.writeFile(wb, 'estadisticas.xlsx');
+    }
+};
+
+document.getElementById('apply-stats-btn').addEventListener('click', () => statsControl.calculate());
+document.getElementById('stats-toggle').addEventListener('click', () => {
+    document.getElementById('stats-panel').classList.toggle('active');
+});
+document.getElementById('export-stats-btn').addEventListener('click', () => statsControl.exportToExcel());
+
+function populateAttributeSuggestions() {
+  const datalist = document.getElementById('attribute-suggestions');
+  const seen = new Set();
+
+  allPolylineFeatures.forEach(feature => {
+    Object.values(feature.properties).forEach(value => {
+      const str = String(value).trim();
+      if (str.length > 0 && !seen.has(str)) {
+        seen.add(str);
+        const option = document.createElement('option');
+        option.value = str;
+        datalist.appendChild(option);
+      }
+    });
+  });
+}
+
+setTimeout(() => {
+  statsControl.calculate();
+  populateAttributeSuggestions();
+}, 2000);
 
 // ==============================================
 // COORDINATE DISPLAY
