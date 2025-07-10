@@ -224,10 +224,10 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
 // loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
 loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV_20250702.geojson', layers.polyline1, styles.polyline1, 'TRAMO', 'polyline');
 loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_IEDDV.geojson', layers.polyline2, styles.polyline2, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/DUCTO_PROGRAMACION_IEDDV.geojson', layers.polyline3, styles.polyline3, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/DUCTO_PROGRAMADO_IEDDV.geojson', layers.polyline3, styles.polyline3, 'TRAMO', 'polyline');
 loadGeoJSON('geojs/DUCTO_RECORRIDO_NT_20250702.geojson', layers.polyline4, styles.polyline4, 'TRAMO', 'polyline');
 loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_NT.geojson', layers.polyline5, styles.polyline5, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/DUCTO_PROGRAMACION_NT.geojson', layers.polyline6, styles.polyline6, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/DUCTO_PROGRAMADO_NT.geojson', layers.polyline6, styles.polyline6, 'TRAMO', 'polyline');
 // loadGeoJSON('geojs/Ducto_Turno4_Adicional.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
 // loadGeoJSON('geojs/VeredasT5.geojson', layers.polygon, styles.polygon, 'VEREDA', 'polygon');
 
