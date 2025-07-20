@@ -563,3 +563,42 @@ body {
   margin-top: 10px;
   padding-top: 6px;
 }
+
+/* Search Coordinates Styles */
+.control-section input[type="text"] {
+  padding: 4px 6px;
+  font-size: 13px;
+  width: 100%;
+}
+
+/* Container layout */
+#coord-search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 220px;
+}
+
+/* Input styling */
+#coord-search-container input[type="text"] {
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Button styling */
+#coord-search-container button {
+  font-size: 13px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: #82868b;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#coord-search-container button:hover {
+  background-color: #394957 ;
+}
