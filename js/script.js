@@ -580,7 +580,7 @@ function setupLabelToggle(toggleId, geojsonUrl, labelLayer, labelField, style, a
 // Setup the lazy label checkboxes
 setupLabelToggle('edificacion-labels-toggle', 'geojs/OCUPACION.geojson', buildingLabelLayer, 'PK_CAMPO', styles.edificacion, latlng => map.getBounds().contains(latlng));
 setupLabelToggle('eventos-labels-toggle', 'geojs/EVENTO_GEOTECNICO.geojson', pointLabelLayer, 'PK_PAT', styles.evento, latlng => map.getBounds().contains(latlng));
-setupLabelToggle('hallazgos-labels-toggle', 'geojs/Hallazgos/Hallazgos.geojson', hallazgosLabelLayer, 'TP_EVENTO', styles.hallazgo, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('hallazgos-labels-toggle', 'geojs/Hallazgos/URL_Hallazgos.geojson', hallazgosLabelLayer, 'TP_EVENTO', styles.hallazgo, latlng => map.getBounds().contains(latlng));
 
 // Load GeoJSON data
 // loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
