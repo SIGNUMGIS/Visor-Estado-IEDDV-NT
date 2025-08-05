@@ -181,6 +181,8 @@ body {
 .polyline5-color { background: #0ed4ee; }
 .polyline6-color { background: #9c0eee; }
 .point-color { background: #EE8C0B; }
+.evento-color { background: #f50e0eff; }
+ 
 
 /* Label Icons */
 .layer-toggle i {
@@ -601,4 +603,12 @@ body {
 
 #coord-search-container button:hover {
   background-color: #394957 ;
+}
+
+.map-popup img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
 }

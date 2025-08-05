@@ -32,16 +32,32 @@ baseMaps["OpenStreetMap"].addTo(map);
 const styles = {
     point: {
         icon: function(zoomLevel) {
-            const size = Math.max(8, 14 - (15 - zoomLevel));
+            const base = Math.max(8, 14 - (15 - zoomLevel));
+            const size = base * 2; // tamaño 2 veces más grande
             return L.divIcon({
                 className: 'custom-fa-marker',
                 html: `<i class="fa-regular fa-plus" style="font-size: ${size}px;"></i>`,
                 iconSize: [size, size],
-                iconAnchor: [size/2, size/2],
+                iconAnchor: [size / 2, size / 2],
                 pane: 'points'
             });
         }
     },
+
+    evento: {
+        icon: function(zoomLevel) {
+            const base = Math.max(8, 14 - (15 - zoomLevel));
+            const size = base * 2; // double the original size
+            return L.divIcon({
+                className: 'custom-fa-marker',
+                html: `<i class="fa-solid fa-road-barrier" style="font-size: ${size}px; color: #f50e0eff;"></i>`,
+                iconSize: [size, size],
+                iconAnchor: [size / 1, size / 1],
+                pane: 'points'
+            });
+        }
+    },
+    
     edificacion: {
         icon: function(zoomLevel) {
             const base = Math.max(8, 14 - (15 - zoomLevel));
@@ -51,6 +67,20 @@ const styles = {
             html: `<i class="fa-solid fa-house" style="font-size: ${size}px;"></i>`,
             iconSize: [size, size],
             iconAnchor: [size / 2, size / 2],
+            pane: 'points'
+            });
+        }
+    },
+
+    hallazgo: {
+        icon: function(zoomLevel) {
+            const base = Math.max(8, 14 - (15 - zoomLevel));
+            const size = base * 2; // double the original size
+            return L.divIcon({
+            className: 'custom-fa-marker',
+            html: `<i class="fa-solid fa-question" style="font-size: ${size}px; color: #10d499ff;"></i>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 4, size / 4],
             pane: 'points'
             });
         }
@@ -105,7 +135,7 @@ const veredasLayer = L.layerGroup();
 const municipiosLayer = L.layerGroup();
 const procesosCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
 const edificacionCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
-
+const hallazgoCluster = L.markerClusterGroup({ chunkedLoading: true });// for performance
 
 // Add checkbox toggles
 function setupLazyToggle(id, layer, options = {}) {
@@ -172,6 +202,9 @@ setupLazyToggle('municipios-layer-toggle', municipiosLayer, {
 
 setupLazyToggle('procesos-layer-toggle', procesosCluster, {
     lazyUrl: 'geojs/EVENTO_GEOTECNICO.geojson',
+    style: styles.evento,
+    labelField: 'PK_CAMPO',
+    layerType: 'point',
     isCluster: true
 });
 
@@ -181,6 +214,13 @@ setupLazyToggle('edificacion-layer-toggle', edificacionCluster,{
     labelField: 'PK_CAMPO',
     layerType: 'point',
     isCluster: true
+});
+
+setupLazyToggle('hallazgos-layer-toggle', hallazgoCluster, {
+  lazyUrl: 'geojs/Hallazgos/URL_Hallazgos.geojson',
+  style: styles.hallazgo,
+  labelField: 'TP_EVENTO',
+  layerType: 'point'
 });
 
 // Función para construir el índice de búsqueda
@@ -222,6 +262,159 @@ const allPolylineFeatures = [];
 // const allFeatures = [];
 
 function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            layer.clearLayers();
+
+            const geoJSONLayer = L.geoJSON(data, {
+                pointToLayer: (feature, latlng) => {
+                    if (layerType === 'point') {
+                        const marker = L.marker(latlng, {
+                            icon: style?.icon ? style.icon(map.getZoom()) : undefined,
+                            pane: 'points'
+                        });
+                        pointLayers.push(marker);
+
+                        feature.layerType = 'point';
+                        feature.layer = marker;
+                        allFeatures.push(feature);
+
+                        return marker;
+                    }
+                    return L.circleMarker(latlng, style);
+                },
+                style: style,
+                onEachFeature: (feature, layer) => {
+                    layer.feature = feature;
+                    feature.layer = layer;
+                    feature.layerType = layerType;
+                    allFeatures.push(feature);
+
+                    if (layerType === 'polyline') {
+                        allPolylineFeatures.push(feature);
+                    }
+
+                    // === POPUP WITH IMAGE PREVIEW SUPPORT ===
+                    /* if (feature.properties) {
+                        let popupContent = '<div class="info map-popup"><h4>Información</h4>';
+                        
+                        for (const prop in feature.properties) {
+                            const val = feature.properties[prop];
+
+                            // Detect if it's an image URL field
+                            if (prop.startsWith('VISUALIZAR_IMAGEN') && val) {
+                                const cleanUrl = convertToPublicUrl(val);
+                                popupContent += `<a href="${cleanUrl}" target="_blank">📷 Ver imagen</a><br>`;
+                            } else {
+                                popupContent += `<b>${prop}:</b> ${val}<br>`;
+                            }
+                        }
+                        popupContent += '</div>';
+                        layer.bindPopup(popupContent);
+                    } */
+                   if (feature.properties) {
+                        let popupContent = '<div class="info"><h4>Información</h4>';
+
+                        for (const prop in feature.properties) {
+                            const val = feature.properties[prop];
+
+                            if (!prop.startsWith('VISUALIZAR_IMAGEN')) {
+                                popupContent += `<b>${prop}:</b> ${val}<br>`;
+                            }
+                        }
+
+                        // Image links
+                        const pictureFields = ['VISUALIZAR_IMAGEN_1', 'VISUALIZAR_IMAGEN_2', 'VISUALIZAR_IMAGEN_3'];
+                        pictureFields.forEach((p, i) => {
+                            const val = feature.properties[p];
+                            if (val) {
+                                const cleanUrl = convertToPublicUrl(val);
+                                popupContent += `<a href="${cleanUrl}" target="_blank"><b>📷 Ver Picture_${i + 1}</b></a><br>`;
+                            }
+                        });
+
+                        popupContent += '</div>';
+                        layer.bindPopup(popupContent);
+                    }
+
+
+                    // === ADD LABELS ===
+                    if (labelField && feature.properties?.[labelField]) {
+                        const position = layer.getBounds?.().getCenter() || layer.getLatLng?.();
+                        if (!position) return;
+
+                        const labelColor = layerType === 'polygon' ? '#000307' :
+                                          layerType === 'polyline' ? style.color : '#ff0000';
+
+                        const label = L.marker(position, {
+                            icon: L.divIcon({
+                                className: 'map-label',
+                                html: `<div style="font-size:12px;font-weight:bold;color:${labelColor};
+                                    text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;">
+                                    ${feature.properties[labelField]}</div>`,
+                                iconSize: [100, 20],
+                                pane: 'labels'
+                            }),
+                            interactive: false
+                        });
+
+                        const labelLayer = layerType === 'polygon' ? layers.polygonLabels :
+                                           layerType === 'polyline' ? layers.polylineLabels :
+                                           layers.pointLabels;
+
+                        labelLayer.addLayer(label);
+                    }
+
+                    const highlightStyle = {
+                        weight: style.weight + 2 || 3,
+                        color: style.color || '#f00',
+                        opacity: 1,
+                        dashArray: ''
+                    };
+
+                    layer.on('mouseover', function () {
+                        this.setStyle(highlightStyle);
+                        this.bringToFront();
+                    });
+
+                    layer.on('mouseout', function () {
+                        layer.setStyle(style);
+                    });
+                }
+            });
+
+            geoJSONLayer.eachLayer(l => {
+                layer.addLayer(l);
+            });
+
+            buildSearchIndex(allFeatures);
+        })
+        .catch(console.error);
+}
+
+// === CONVERT ONEDRIVE LINK TO PUBLIC PREVIEW ===
+function convertToPublicUrl(rawUrl) {
+    try {
+        if (!rawUrl.includes('1drv.ms') && !rawUrl.includes('sharepoint.com')) return rawUrl;
+
+        if (rawUrl.includes('1drv.ms')) {
+            return rawUrl.replace('1drv.ms', 'onedrive.live.com').replace('?e=', '?download=1');
+        }
+
+        if (rawUrl.includes('sharepoint.com')) {
+            const base = rawUrl.split('?')[0];
+            return base + '?raw=1';
+        }
+
+        return rawUrl;
+    } catch (e) {
+        console.warn('Invalid OneDrive URL:', rawUrl);
+        return rawUrl;
+    }
+}
+
+/* function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
     fetch(url)
         .then(response => response.json())
         .then(data => {
@@ -327,12 +520,13 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
             buildSearchIndex(allFeatures);
         })
         .catch(console.error);
-}
+} */
 
 
 // === Checkbox logic to lazily load building and point labels ===
 const buildingLabelLayer = L.layerGroup();
 const pointLabelLayer = L.layerGroup();
+const hallazgosLabelLayer = L.layerGroup();
 
 function setupLabelToggle(toggleId, geojsonUrl, labelLayer, labelField, style, areaCheckFunction) {
     const checkbox = document.getElementById(toggleId);
@@ -384,8 +578,9 @@ function setupLabelToggle(toggleId, geojsonUrl, labelLayer, labelField, style, a
 }
 
 // Setup the lazy label checkboxes
-setupLabelToggle('edificacion-labels-toggle', 'geojs/OCUPACION.geojson', buildingLabelLayer, 'PK_CAMPO', styles.building, latlng => map.getBounds().contains(latlng));
-setupLabelToggle('eventos-labels-toggle', 'geojs/EVENTO_GEOTECNICO.geojson', pointLabelLayer, 'PK_PAT', styles.point, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('edificacion-labels-toggle', 'geojs/OCUPACION.geojson', buildingLabelLayer, 'PK_CAMPO', styles.edificacion, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('eventos-labels-toggle', 'geojs/EVENTO_GEOTECNICO.geojson', pointLabelLayer, 'PK_PAT', styles.evento, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('hallazgos-labels-toggle', 'geojs/Hallazgos/Hallazgos.geojson', hallazgosLabelLayer, 'TP_EVENTO', styles.hallazgo, latlng => map.getBounds().contains(latlng));
 
 // Load GeoJSON data
 // loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
