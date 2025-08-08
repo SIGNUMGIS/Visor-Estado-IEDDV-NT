@@ -251,15 +251,23 @@
 
             <div class="control-section collapsible not-active">
             <div class="section-header">
-                <h4>Eventos y Ocupaciones</h4>
+                <h4>Línea Base de Eventos y Ocupaciones</h4>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="section-content compact">
                 <div class="layer-toggle">
-                    <i class="fa-solid fa-road-barrier point-label-icon"; style="color : #f50e0eff;"></i>
+                    <i class="fa-solid fa-thumbtack point-label-icon"; style="color : #f50e0eff;"></i>
+                <input type="checkbox" id="evento-layer-toggle">
+                <label for="evento-layer-toggle">
+                    Eventos Geotécnicos
+                </label>
+                </div>
+
+                <div class="layer-toggle">
+                    <i class="fa-solid fa-thumbtack point-label-icon"; style="color : #f50ef5ff;"></i>
                 <input type="checkbox" id="procesos-layer-toggle">
                 <label for="procesos-layer-toggle">
-                    Eventos Geotécnicos
+                    Procesos Menores
                 </label>
                 </div>
             <!-- </div>
@@ -287,6 +295,22 @@
                 Hallazgos
                 </label>
                 </div>
+
+                <div class="layer-toggle">
+                    <i class="fa-regular fa-plus point-label-icon"></i>
+                <input type="checkbox" id="hProcesoMenor-layer-toggle">
+                <label for="hProcesoMenor-layer-toggle">
+                Proceso Menor
+                </label>
+                </div>
+
+                <div class="layer-toggle">
+                    <i class="fa-regular fa-plus point-label-icon"></i>
+                <input type="checkbox" id="hEvento-layer-toggle">
+                <label for="hEvento-layer-toggle">
+                Evento
+                </label>
+                </div>
             </div>
         </div>
 
@@ -299,27 +323,49 @@
                 <div class="layer-toggle">
                     <input type="checkbox" id="eventos-labels-toggle">
                     <label for="point-labels-toggle">
-                        <i class="fa-solid fa-road-barrier point-label-icon"; style="color : #f50e0eff;"></i>
-                        Etiquetas de Eventos
+                        <i class="fa-solid fa-thumbtack point-label-icon"; style="color : #f50e0eff;"></i>
+                        Eventos
                     </label>
+
+                    <input type="checkbox" id="procesomenor-labels-toggle">
+                    <label for="point-labels-toggle">
+                        <i class="fa-solid fa-thumbtack point-label-icon"; style="color : #f50ef5ff;"></i>
+                        Procesos Menores
+                    </label>
+                </div>
+                <div class="layer-toggle">
                     <input type="checkbox" id="edificacion-labels-toggle">
                     <label for="point-labels-toggle">
                         <i class="fa-solid fa-house point-label-icon"></i>
-                        Etiquetas de Ocupaciones
+                        Ocupaciones
                     </label>
                 </div>
                 <div class="layer-toggle">
                     <input type="checkbox" id="hallazgos-labels-toggle">
                     <label for="hallazgos-labels-toggle">
                         <i class="fa-regular fa-plus point-label-icon"></i>
-                        Etiquetas de hallazgos
+                        Hallazgos
+                    </label>
+                </div>
+                <div class="layer-toggle">
+                    <input type="checkbox" id="hProcesoMenor-labels-toggle">
+                    <label for="hProcesoMenor-labels-toggle">
+                        <i class="fa-regular fa-plus point-label-icon"></i>
+                        Proceso Menor IEDDV
+                    </label>
+                </div>
+                <div class="layer-toggle">
+                    <input type="checkbox" id="hEvento-labels-toggle">
+                    <label for="hEvento-labels-toggle">
+                        <i class="fa-regular fa-plus point-label-icon"></i>
+                        Evento  IEDDV
                     </label>
                 </div>
                 <div class="layer-toggle">
                     <input type="checkbox" id="polyline-labels-toggle">
                     <label for="polyline-labels-toggle">
                         <i class="fas fa-tag polyline-label-icon"></i>
-                        Etiquetas de Ducto
+                        Ducto
                     </label>
                 </div>
                 <!-- <div class="layer-toggle">

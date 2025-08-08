@@ -50,7 +50,21 @@ const styles = {
             const size = base * 2; // double the original size
             return L.divIcon({
                 className: 'custom-fa-marker',
-                html: `<i class="fa-solid fa-road-barrier" style="font-size: ${size}px; color: #f50e0eff;"></i>`,
+                html: `<i class="fa-solid fa-thumbtack" style="font-size: ${size}px; color: #f70808ff;"></i>`,
+                iconSize: [size, size],
+                iconAnchor: [size / 1, size / 1],
+                pane: 'points'
+            });
+        }
+    },
+
+    procesomenor: {
+        icon: function(zoomLevel) {
+            const base = Math.max(8, 14 - (15 - zoomLevel));
+            const size = base * 2; // double the original size
+            return L.divIcon({
+                className: 'custom-fa-marker',
+                html: `<i class="fa-solid fa-thumbtack" style="font-size: ${size}px; color: #f50ef5ff;"></i>`,
                 iconSize: [size, size],
                 iconAnchor: [size / 1, size / 1],
                 pane: 'points'
@@ -85,6 +99,35 @@ const styles = {
             });
         }
     },
+
+    hProcesoMenor: {
+        icon: function(zoomLevel) {
+            const base = Math.max(8, 14 - (15 - zoomLevel));
+            const size = base * 2; // double the original size
+            return L.divIcon({
+            className: 'custom-fa-marker',
+            html: `<i class="fa-solid fa-question" style="font-size: ${size}px; color: #10d499ff;"></i>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 4, size / 4],
+            pane: 'points'
+            });
+        }
+    },
+
+    hEvento: {
+        icon: function(zoomLevel) {
+            const base = Math.max(8, 14 - (15 - zoomLevel));
+            const size = base * 2; // double the original size
+            return L.divIcon({
+            className: 'custom-fa-marker',
+            html: `<i class="fa-solid fa-question" style="font-size: ${size}px; color: #10d499ff;"></i>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 4, size / 4],
+            pane: 'points'
+            });
+        }
+    },
+
     polyline1: { color: '#1df00a', weight: 4, opacity: 0.8, pane: 'polylines' },
     polyline2: { color: '#fac107', weight: 4, opacity: 0.8, pane: 'polylines' },
     polyline3: { color: '#e4a0d8', weight: 4, opacity: 0.8, pane: 'polylines' },
@@ -133,9 +176,12 @@ const layers = {
 // Add Veredas, Municipios and Procesos layers
 const veredasLayer = L.layerGroup();
 const municipiosLayer = L.layerGroup();
+const eventoCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
 const procesosCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
 const edificacionCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
 const hallazgoCluster = L.markerClusterGroup({ chunkedLoading: true });// for performance
+const hProcesoMenorCluster = L.markerClusterGroup({ chunkedLoading: true });// for performance
+const hEventoCluster = L.markerClusterGroup({ chunkedLoading: true });// for performance
 
 // Add checkbox toggles
 function setupLazyToggle(id, layer, options = {}) {
@@ -200,10 +246,18 @@ setupLazyToggle('municipios-layer-toggle', municipiosLayer, {
     layerType: 'polygon'
 });
 
-setupLazyToggle('procesos-layer-toggle', procesosCluster, {
+setupLazyToggle('evento-layer-toggle', eventoCluster, {
     lazyUrl: 'geojs/EVENTO_GEOTECNICO.geojson',
     style: styles.evento,
-    labelField: 'PK_CAMPO',
+    labelField: 'PK_PAT',
+    layerType: 'point',
+    isCluster: true
+});
+
+setupLazyToggle('procesos-layer-toggle', procesosCluster, {
+    lazyUrl: 'geojs/PROCESO_MENOR.geojson',
+    style: styles.procesomenor,
+    labelField: 'PK_PAT',
     layerType: 'point',
     isCluster: true
 });
@@ -219,7 +273,21 @@ setupLazyToggle('edificacion-layer-toggle', edificacionCluster,{
 setupLazyToggle('hallazgos-layer-toggle', hallazgoCluster, {
   lazyUrl: 'geojs/Hallazgos/URL_Hallazgos.geojson',
   style: styles.hallazgo,
-  labelField: 'TP_EVENTO',
+  labelField: 'PK',
+  layerType: 'point'
+});
+
+setupLazyToggle('hProcesoMenor-layer-toggle', hProcesoMenorCluster, {
+  lazyUrl: 'geojs/Hallazgos/URL_ProcesosMenores.geojson',
+  style: styles.hProcesoMenor,
+  labelField: 'PK',
+  layerType: 'point'
+});
+
+setupLazyToggle('hEvento-layer-toggle', hEventoCluster, {
+  lazyUrl: 'geojs/Hallazgos/URL_Eventos.geojson',
+  style: styles.hEvento,
+  labelField: 'PK',
   layerType: 'point'
 });
 
@@ -525,8 +593,11 @@ function convertToPublicUrl(rawUrl) {
 
 // === Checkbox logic to lazily load building and point labels ===
 const buildingLabelLayer = L.layerGroup();
+const eventoLabelLayer = L.layerGroup();
 const pointLabelLayer = L.layerGroup();
 const hallazgosLabelLayer = L.layerGroup();
+const hProcesoMenorLabelLayer = L.layerGroup();
+const hEventoLabelLayer = L.layerGroup();
 
 function setupLabelToggle(toggleId, geojsonUrl, labelLayer, labelField, style, areaCheckFunction) {
     const checkbox = document.getElementById(toggleId);
@@ -579,8 +650,12 @@ function setupLabelToggle(toggleId, geojsonUrl, labelLayer, labelField, style, a
 
 // Setup the lazy label checkboxes
 setupLabelToggle('edificacion-labels-toggle', 'geojs/OCUPACION.geojson', buildingLabelLayer, 'PK_CAMPO', styles.edificacion, latlng => map.getBounds().contains(latlng));
-setupLabelToggle('eventos-labels-toggle', 'geojs/EVENTO_GEOTECNICO.geojson', pointLabelLayer, 'PK_PAT', styles.evento, latlng => map.getBounds().contains(latlng));
-setupLabelToggle('hallazgos-labels-toggle', 'geojs/Hallazgos/URL_Hallazgos.geojson', hallazgosLabelLayer, 'TP_EVENTO', styles.hallazgo, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('eventos-labels-toggle', 'geojs/EVENTO_GEOTECNICO.geojson', eventoLabelLayer, 'PK_PAT', styles.evento, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('procesomenor-labels-toggle', 'geojs/PROCESO_MENOR.geojson', pointLabelLayer, 'PK_PAT', styles.procesomenor, latlng => map.getBounds().contains(latlng));
+
+setupLabelToggle('hallazgos-labels-toggle', 'geojs/Hallazgos/URL_Hallazgos.geojson', hallazgosLabelLayer, 'PK', styles.hallazgo, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('hProcesoMenor-labels-toggle', 'geojs/Hallazgos/URL_ProcesosMenores.geojson', hProcesoMenorLabelLayer, 'PK', styles.hProcesoMenor, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('hEvento-labels-toggle', 'geojs/Hallazgos/URL_Eventos.geojson', hEventoLabelLayer, 'PK', styles.hEvento, latlng => map.getBounds().contains(latlng));
 
 // Load GeoJSON data
 // loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
