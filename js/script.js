@@ -114,16 +114,31 @@ const styles = {
         }
     },
 
-    hEvento: {
+    CruceAereo: {
         icon: function(zoomLevel) {
             const base = Math.max(8, 14 - (15 - zoomLevel));
             const size = base * 2; // double the original size
             return L.divIcon({
             className: 'custom-fa-marker',
-            html: `<i class="fa-solid fa-question" style="font-size: ${size}px; color: #10d499ff;"></i>`,
+            html: `<i class="fa-solid fa-plane" style="font-size: ${size}px; color: #10c7d4ff;"></i>`,
             iconSize: [size, size],
             iconAnchor: [size / 4, size / 4],
             pane: 'points'
+            });
+        }
+    },
+
+
+    CruceSubfluvial: {
+        icon: function(zoomLevel) {
+            const base = Math.max(8, 14 - (15 - zoomLevel));
+            const size = base * 2; // double the original size
+            return L.divIcon({
+                className: 'custom-fa-marker',
+                html: `<i class="fa-solid fa-signs-post" style="font-size: ${size}px; color: #0848f7ff;"></i>`,
+                iconSize: [size, size],
+                iconAnchor: [size / 1, size / 1],
+                pane: 'points'
             });
         }
     },
@@ -138,6 +153,20 @@ const styles = {
         fillColor: '#EDED0E', 
         weight: 1, 
         color: '#EDBD0E',
+        fillOpacity: 0.3,
+        pane: 'polygons'
+    },
+    AnchoDDV: { 
+        fillColor: '#92067bff', 
+        weight: 1, 
+        color: '#92067bff',
+        fillOpacity: 0.3,
+        pane: 'polygons'
+    },
+    Buffer200: { 
+        fillColor: '#c683ecff', 
+        weight: 1, 
+        color: '#c683ecff',
         fillOpacity: 0.3,
         pane: 'polygons'
     },
@@ -176,12 +205,16 @@ const layers = {
 // Add Veredas, Municipios and Procesos layers
 const veredasLayer = L.layerGroup();
 const municipiosLayer = L.layerGroup();
+const AnchoDDV = L.layerGroup();
+const Buffer200 = L.layerGroup();
 const eventoCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
 const procesosCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
 const edificacionCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
 const hallazgoCluster = L.markerClusterGroup({ chunkedLoading: true });// for performance
 const hProcesoMenorCluster = L.markerClusterGroup({ chunkedLoading: true });// for performance
 const hEventoCluster = L.markerClusterGroup({ chunkedLoading: true });// for performance
+const CruceAereoCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
+const CruceSubfluvialCluster = L.markerClusterGroup({ chunkedLoading: true }); // for performance
 
 // Add checkbox toggles
 function setupLazyToggle(id, layer, options = {}) {
@@ -246,6 +279,20 @@ setupLazyToggle('municipios-layer-toggle', municipiosLayer, {
     layerType: 'polygon'
 });
 
+setupLazyToggle('AnchoDDV-layer-toggle', AnchoDDV, {
+    lazyUrl: 'geojs/AnchoDDV.geojson',
+    style: styles.AnchoDDV,
+    labelField: 'TRAMO',
+    layerType: 'polygon'
+});
+
+setupLazyToggle('Buffer200-layer-toggle', Buffer200, {
+    lazyUrl: 'geojs/Buffer200.geojson',
+    style: styles.Buffer200,
+    labelField: 'TRAMO',
+    layerType: 'polygon'
+});
+
 setupLazyToggle('evento-layer-toggle', eventoCluster, {
     lazyUrl: 'geojs/EVENTO_GEOTECNICO.geojson',
     style: styles.evento,
@@ -289,6 +336,22 @@ setupLazyToggle('hEvento-layer-toggle', hEventoCluster, {
   style: styles.hEvento,
   labelField: 'PK',
   layerType: 'point'
+});
+
+setupLazyToggle('CruceAereo-layer-toggle', CruceAereoCluster, {
+    lazyUrl: 'geojs/CRUCE_AEREO.geojson',
+    style: styles.CruceAereo,
+    labelField: 'PK',
+    layerType: 'point',
+    isCluster: true
+});
+
+setupLazyToggle('CruceSubfluvial-layer-toggle', CruceSubfluvialCluster, {
+    lazyUrl: 'geojs/CRUCE_SUBFLUVIAL.geojson',
+    style: styles.CruceSubfluvial,
+    labelField: 'PK',
+    layerType: 'point',
+    isCluster: true
 });
 
 // Función para construir el índice de búsqueda
@@ -598,7 +661,8 @@ const pointLabelLayer = L.layerGroup();
 const hallazgosLabelLayer = L.layerGroup();
 const hProcesoMenorLabelLayer = L.layerGroup();
 const hEventoLabelLayer = L.layerGroup();
-
+const CruceAereoLabelLayer = L.layerGroup();
+const CruceSubfluvialLabelLayer = L.layerGroup();
 function setupLabelToggle(toggleId, geojsonUrl, labelLayer, labelField, style, areaCheckFunction) {
     const checkbox = document.getElementById(toggleId);
     if (!checkbox) return;
@@ -657,6 +721,9 @@ setupLabelToggle('hallazgos-labels-toggle', 'geojs/Hallazgos/URL_Hallazgos.geojs
 setupLabelToggle('hProcesoMenor-labels-toggle', 'geojs/Hallazgos/URL_ProcesosMenores.geojson', hProcesoMenorLabelLayer, 'PK', styles.hProcesoMenor, latlng => map.getBounds().contains(latlng));
 setupLabelToggle('hEvento-labels-toggle', 'geojs/Hallazgos/URL_Eventos.geojson', hEventoLabelLayer, 'PK', styles.hEvento, latlng => map.getBounds().contains(latlng));
 
+setupLabelToggle('CruceAereo-labels-toggle', 'geojs/CRUCE_AEREO.geojson', CruceAereoLabelLayer, 'PK', styles.CruceAereo, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('CruceSubfluvial-labels-toggle', 'geojs/CRUCE_SUBFLUVIAL.geojson', CruceSubfluvialLabelLayer, 'PK', styles.CruceSubfluvial, latlng => map.getBounds().contains(latlng));
+
 // Load GeoJSON data
 // loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
 loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV_20250702.geojson', layers.polyline1, styles.polyline1, 'TRAMO', 'polyline');
@@ -665,8 +732,8 @@ loadGeoJSON('geojs/DUCTO_PROGRAMADO_IEDDV.geojson', layers.polyline3, styles.pol
 loadGeoJSON('geojs/DUCTO_RECORRIDO_NT_20250702.geojson', layers.polyline4, styles.polyline4, 'TRAMO', 'polyline');
 loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_NT.geojson', layers.polyline5, styles.polyline5, 'TRAMO', 'polyline');
 loadGeoJSON('geojs/DUCTO_PROGRAMADO_NT.geojson', layers.polyline6, styles.polyline6, 'TRAMO', 'polyline');
-// loadGeoJSON('geojs/Ducto_Turno4_Adicional.geojson', layers.polyline4, styles.polyline4, 'TRM_RML', 'polyline');
-// loadGeoJSON('geojs/VeredasT5.geojson', layers.polygon, styles.polygon, 'VEREDA', 'polygon');
+loadGeoJSON('geojs/AnchoDDV.geojson', layers.AnchoDDV, styles.AnchoDDV, 'TRAMO', 'polygon');
+loadGeoJSON('geojs/Buffer200.geojson', layers.Buffer200, styles.Buffer200, 'TRAMO', 'polygon');
 
 // Update point icons on zoom
 map.on('zoomend', function() {
