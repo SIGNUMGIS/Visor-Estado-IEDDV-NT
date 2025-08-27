@@ -100,6 +100,21 @@ const styles = {
         }
     },
 
+    hEvento: {
+        icon: function(zoomLevel) {
+            const base = Math.max(8, 14 - (15 - zoomLevel));
+            const size = base * 2; // double the original size
+            return L.divIcon({
+            className: 'custom-fa-marker',
+            html: `<i class="fa-solid fa-question" style="font-size: ${size}px; color: #10d499ff;"></i>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 4, size / 4],
+            pane: 'points'
+            });
+        }
+    },
+
+
     hProcesoMenor: {
         icon: function(zoomLevel) {
             const base = Math.max(8, 14 - (15 - zoomLevel));
