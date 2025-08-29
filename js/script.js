@@ -715,7 +715,7 @@ function setupLabelToggle(toggleId, geojsonUrl, labelLayer, labelField, style, a
                                 labelLayer.addLayer(label);
                             }
                         });
-
+                        
                         map.addLayer(labelLayer);
                     });
             } else {
@@ -724,6 +724,7 @@ function setupLabelToggle(toggleId, geojsonUrl, labelLayer, labelField, style, a
         } else {
             map.removeLayer(labelLayer);
         }
+        
     });
 }
 
