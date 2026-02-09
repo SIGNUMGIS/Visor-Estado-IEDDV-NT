@@ -94,14 +94,13 @@
                         <div class="stats-filters">
                             <select id="stats-layer-select">
                                 <option value="all">Todas las capas</option>
-                                <option value="polyline1">IEDDV Recorrido</option>
-                                <option value="polyline2">IEDDV Estructuración</option>
-                                <option value="polyline3">IEDDV Programado</option>
-                                <option value="polyline4">NT Recorrido</option>
-                                <option value="polyline5">NT Estructuración</option>
-                                <option value="polyline6">NT Programado</option>
+                                <option value="programacion">Programacion 2026</option>
+                                <option value="polyline1">IEDDV Recorrido 2025</option>
+                                <option value="polyline2">NT Recorrido 2025</option>
                             </select>
                             <select id="stats-field-select">
+                                <option value="SERVICIO">SERVICIO</option>
+                                <option value="ESTADO">ESTADO</option>
                                 <option value="GASODUCTO">GASODUCTO</option>
                                 <option value="DISTRITO">DISTRITO</option>
                                 <option value="TRAMO">TRAMO</option>
@@ -154,56 +153,53 @@
                 </div>
             </div>
         </div>
-
         <div class="control-section collapsible not-active">
             <div class="section-header">
-                <h4>Avance del Contrato</h4>
+                <h4>Recorrido 2025</h4>
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="section-content compact">
                 <div class="layer-toggle">
-                    <input type="checkbox" id="polyline1-layer-toggle" checked>
+                    <input type="checkbox" id="polyline1-layer-toggle">
                     <label for="polyline1-layer-toggle">
                         <span class="layer-color polyline1-color"></span>
                         IEDDV Recorrido
                     </label>
                 </div>
                 <div class="layer-toggle">
+                    <input type="checkbox" id="polyline2-layer-toggle">
+                    <label for="polyline2-layer-toggle">
+                        <span class="layer-color polyline2-color"></span>
+                        NT Recorrido
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-section collapsible not-active">
+            <div class="section-header">
+                <h4>Avance 2026</h4>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="section-content compact">
+                <div class="layer-toggle">
+                    <input type="checkbox" id="programacion-layer-toggle" checked>
+                    <label for="programacion-layer-toggle">
+                        <span class="layer-color programacion-legend"></span>
+                        PROGRAMACION 2026
+                    </label>
+
+                    <!-- Dynamic symbology -->
+                    <div class="programacion-legend-items"></div>
+                </div>
+
+                <!-- <div class="layer-toggle">
                     <input type="checkbox" id="polyline2-layer-toggle" checked>
                     <label for="polyline2-layer-toggle">
                         <span class="layer-color polyline2-color"></span>
                         IEDDV Estructuración
                     </label>
-                </div>
-                <div class="layer-toggle">
-                    <input type="checkbox" id="polyline3-layer-toggle" checked>
-                    <label for="polyline3-layer-toggle">
-                        <span class="layer-color polyline3-color"></span>
-                        IEDDV Programado
-                    </label>
-                </div>
-
-                <div class="layer-toggle">
-                    <input type="checkbox" id="polyline4-layer-toggle" checked>
-                    <label for="polyline4-layer-toggle">
-                        <span class="layer-color polyline4-color"></span>
-                        NT Recorrido
-                    </label>
-                </div>
-                <div class="layer-toggle">
-                    <input type="checkbox" id="polyline5-layer-toggle" checked>
-                    <label for="polyline5-layer-toggle">
-                        <span class="layer-color polyline5-color"></span>
-                        NT Estructuración
-                    </label>
-                </div>
-                <div class="layer-toggle">
-                    <input type="checkbox" id="polyline6-layer-toggle" checked>
-                    <label for="polyline6-layer-toggle">
-                        <span class="layer-color polyline6-color"></span>
-                        NT Programado
-                    </label>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -269,7 +265,7 @@
             <div class="section-content compact">
                 <div class="layer-toggle">
                     <i class="fa-regular fa-plus point-label-icon"></i>
-                <input type="checkbox" id="hallazgos-layer-toggle">
+                <input type="checkbox" id="hallazgos 2026-layer-toggle">
                 <label for="hallazgos-layer-toggle">
                 Hallazgos
                 </label>
@@ -277,7 +273,7 @@
 
                 <div class="layer-toggle">
                     <i class="fa-regular fa-plus point-label-icon"></i>
-                <input type="checkbox" id="hProcesoMenor-layer-toggle">
+                <input type="checkbox" id="hProcesoMenor 2026-layer-toggle">
                 <label for="hProcesoMenor-layer-toggle">
                 Proceso Menor
                 </label>
@@ -285,12 +281,37 @@
 
                 <div class="layer-toggle">
                     <i class="fa-regular fa-plus point-label-icon"></i>
-                <input type="checkbox" id="hEvento-layer-toggle">
+                <input type="checkbox" id="hEvento  2026-layer-toggle">
                 <label for="hEvento-layer-toggle">
                 Evento
                 </label>
                 </div>
+            <div class="section-content compact">
+                <div class="layer-toggle">
+                    <i class="fa-regular fa-plus point-label-icon"></i>
+                <input type="checkbox" id="hallazgos-layer-toggle">
+                <label for="hallazgos-layer-toggle">
+                Hallazgos 2025
+                </label>
+                </div>
+
+                <div class="layer-toggle">
+                    <i class="fa-regular fa-plus point-label-icon"></i>
+                <input type="checkbox" id="hProcesoMenor-layer-toggle">
+                <label for="hProcesoMenor-layer-toggle">
+                Proceso Menor 2025
+                </label>
+                </div>
+
+                <div class="layer-toggle">
+                    <i class="fa-regular fa-plus point-label-icon"></i>
+                <input type="checkbox" id="hEvento-layer-toggle">
+                <label for="hEvento-layer-toggle">
+                Evento 2025
+                </label>
+                </div>
             </div>
+            </div>            
         </div>
 
         <div class="control-section collapsible not-active">

@@ -158,12 +158,9 @@ const styles = {
         }
     },
 
-    polyline1: { color: '#1df00a', weight: 4, opacity: 0.8, pane: 'polylines' },
-    polyline2: { color: '#fac107', weight: 4, opacity: 0.8, pane: 'polylines' },
-    polyline3: { color: '#e4a0d8', weight: 4, opacity: 0.8, pane: 'polylines' },
-    polyline4: { color: '#0E30EE', weight: 4, opacity: 0.8, pane: 'polylines' },
-    polyline5: { color: '#0ed4ee', weight: 4, opacity: 0.8, pane: 'polylines' },
-    polyline6: { color: '#9c0eee', weight: 4, opacity: 0.8, pane: 'polylines' },
+    polyline1: { color: '#28ec0eff', weight: 4, opacity: 0.9, pane: 'polylines' },
+    polyline2: { color: '#0c9ba0ff', weight: 4, opacity: 0.9, pane: 'polylines' },
+
     polygon: { 
         fillColor: '#EDED0E', 
         weight: 1, 
@@ -202,20 +199,68 @@ const styles = {
     },
 };
 
+// SYMBOLOGY COLOR FOR PROGRAMACION LAYER
+const programacionColors = {
+    'IEDDV_RECORRIDO': '#12c002ff',
+    'IEDDV_ESTRUCTURACION': '#fac107',
+    'IEDDV_PROGRAMADO': '#e4a0d8',
+    'NT_RECORRIDO': '#0E30EE',
+    'NT_ESTRUCTURACION': '#0ed4ee',
+    'NT_PROGRAMADO': '#9c0eee'
+};
+
+function getProgramacionStyle(feature) {
+    const key = `${feature.properties?.SERVICIO}_${feature.properties?.ESTADO}`;
+    return {
+        color: programacionColors[key] || '#999999',
+        weight: 4,
+        opacity: 0.9,
+        pane: 'polylines'
+    };
+}
+
+function buildProgramacionLegend() {
+    const container = document.querySelector('.programacion-legend-items');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    Object.entries(programacionColors).forEach(([key, color]) => {
+        const [servicio, estado] = key.split('_');
+
+        const item = document.createElement('div');
+        item.className = 'programacion-legend-item';
+
+        const swatch = document.createElement('span');
+        swatch.className = 'programacion-legend-color';
+        swatch.style.backgroundColor = color;
+
+        const label = document.createElement('span');
+        label.textContent = `${servicio} – ${estado}`;
+
+        item.appendChild(swatch);
+        item.appendChild(label);
+        container.appendChild(item);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    buildProgramacionLegend();
+});
+
+
 // Create layer groups
 const layers = {
     point: L.layerGroup().addTo(map),
-    polyline1: L.layerGroup().addTo(map),
-    polyline2: L.layerGroup().addTo(map),
-    polyline3: L.layerGroup().addTo(map),
-    polyline4: L.layerGroup().addTo(map),
-    polyline5: L.layerGroup().addTo(map),
-    polyline6: L.layerGroup().addTo(map),
+    programacion: L.layerGroup().addTo(map),
+    polyline1: L.layerGroup(),
+    polyline2: L.layerGroup(),
     polygon: L.layerGroup().addTo(map),
     pointLabels: L.layerGroup(),
     polylineLabels: L.layerGroup(),
     polygonLabels: L.layerGroup()
 };
+
 
 // Add Veredas, Municipios and Procesos layers
 const veredasLayer = L.layerGroup();
@@ -277,6 +322,16 @@ function setupLazyToggle(id, layer, options = {}) {
             map.removeLayer(layer);
         }
     });
+}
+
+function getProgramacionStyle(feature) {
+    const key = `${feature.properties?.SERVICIO}_${feature.properties?.ESTADO}`;
+    return {
+        color: programacionColors[key] || '#999999',
+        weight: 4,
+        opacity: 0.9,
+        pane: 'polylines'
+    };
 }
 
 // Lazy load layers only when user activates them
@@ -430,10 +485,15 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                     }
                     return L.circleMarker(latlng, style);
                 },
-                style: style,
-                onEachFeature: (feature, layer) => {
-                    layer.feature = feature;
-                    feature.layer = layer;
+                // ✅ SUPPORT STATIC STYLE OBJECT OR STYLE FUNCTION
+                style: feature => {
+                    return (typeof style === 'function')
+                        ? style(feature)
+                        : style;
+                },
+                onEachFeature: (feature, layerObj) => {
+                    layerObj.feature = feature;
+                    feature.layer = layerObj;
                     feature.layerType = layerType;
                     allFeatures.push(feature);
 
@@ -441,99 +501,105 @@ function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
                         allPolylineFeatures.push(feature);
                     }
 
-                    // === POPUP WITH IMAGE PREVIEW SUPPORT ===
-                    /* if (feature.properties) {
-                        let popupContent = '<div class="info map-popup"><h4>Información</h4>';
-                        
-                        for (const prop in feature.properties) {
-                            const val = feature.properties[prop];
-
-                            // Detect if it's an image URL field
-                            if (prop.startsWith('VISUALIZAR_IMAGEN') && val) {
-                                const cleanUrl = convertToPublicUrl(val);
-                                popupContent += `<a href="${cleanUrl}" target="_blank">📷 Ver imagen</a><br>`;
-                            } else {
-                                popupContent += `<b>${prop}:</b> ${val}<br>`;
-                            }
-                        }
-                        popupContent += '</div>';
-                        layer.bindPopup(popupContent);
-                    } */
-                   if (feature.properties) {
+                    // ================= POPUP =================
+                    if (feature.properties) {
                         let popupContent = '<div class="info"><h4>Información</h4>';
 
                         for (const prop in feature.properties) {
                             const val = feature.properties[prop];
-
                             if (!prop.startsWith('VISUALIZAR_IMAGEN')) {
                                 popupContent += `<b>${prop}:</b> ${val}<br>`;
                             }
                         }
 
-                        // Image links
-                        const pictureFields = ['VISUALIZAR_IMAGEN_1', 'VISUALIZAR_IMAGEN_2', 'VISUALIZAR_IMAGEN_3'];
+                        const pictureFields = [
+                            'VISUALIZAR_IMAGEN_1',
+                            'VISUALIZAR_IMAGEN_2',
+                            'VISUALIZAR_IMAGEN_3'
+                        ];
+
                         pictureFields.forEach((p, i) => {
                             const val = feature.properties[p];
                             if (val) {
                                 const cleanUrl = convertToPublicUrl(val);
-                                popupContent += `<a href="${cleanUrl}" target="_blank"><b>📷 Ver Picture_${i + 1}</b></a><br>`;
+                                popupContent += `<a href="${cleanUrl}" target="_blank">
+                                    <b>📷 Ver Picture_${i + 1}</b></a><br>`;
                             }
                         });
 
                         popupContent += '</div>';
-                        layer.bindPopup(popupContent);
+                        layerObj.bindPopup(popupContent);
                     }
 
-
-                    // === ADD LABELS ===
+                    // ================= LABELS =================
                     if (labelField && feature.properties?.[labelField]) {
-                        const position = layer.getBounds?.().getCenter() || layer.getLatLng?.();
+                        const position =
+                            layerObj.getBounds?.().getCenter() ||
+                            layerObj.getLatLng?.();
+
                         if (!position) return;
 
-                        const labelColor = layerType === 'polygon' ? '#000307' :
-                                          layerType === 'polyline' ? style.color : '#ff0000';
+                        const appliedStyle = (typeof style === 'function')
+                            ? style(feature)
+                            : style;
+
+                        const labelColor =
+                            layerType === 'polygon' ? '#000307' :
+                            layerType === 'polyline' ? appliedStyle.color :
+                            '#ff0000';
 
                         const label = L.marker(position, {
                             icon: L.divIcon({
                                 className: 'map-label',
-                                html: `<div style="font-size:12px;font-weight:bold;color:${labelColor};
-                                    text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;">
-                                    ${feature.properties[labelField]}</div>`,
+                                html: `<div style="
+                                    font-size:12px;
+                                    font-weight:bold;
+                                    color:${labelColor};
+                                    text-shadow:
+                                      -1px -1px 0 #fff,
+                                       1px -1px 0 #fff,
+                                      -1px  1px 0 #fff,
+                                       1px  1px 0 #fff;">
+                                    ${feature.properties[labelField]}
+                                </div>`,
                                 iconSize: [100, 20],
                                 pane: 'labels'
                             }),
                             interactive: false
                         });
 
-                        const labelLayer = layerType === 'polygon' ? layers.polygonLabels :
-                                           layerType === 'polyline' ? layers.polylineLabels :
-                                           layers.pointLabels;
+                        const labelLayer =
+                            layerType === 'polygon' ? layers.polygonLabels :
+                            layerType === 'polyline' ? layers.polylineLabels :
+                            layers.pointLabels;
 
                         labelLayer.addLayer(label);
                     }
 
+                    // ================= HOVER HIGHLIGHT =================
+                    const baseStyle = (typeof style === 'function')
+                        ? style(feature)
+                        : style;
+
                     const highlightStyle = {
-                        weight: style.weight + 2 || 3,
-                        color: style.color || '#f00',
+                        weight: (baseStyle.weight || 2) + 2,
+                        color: baseStyle.color || '#f00',
                         opacity: 1,
                         dashArray: ''
                     };
 
-                    layer.on('mouseover', function () {
+                    layerObj.on('mouseover', function () {
                         this.setStyle(highlightStyle);
                         this.bringToFront();
                     });
 
-                    layer.on('mouseout', function () {
-                        layer.setStyle(style);
+                    layerObj.on('mouseout', function () {
+                        this.setStyle(baseStyle);
                     });
                 }
             });
 
-            geoJSONLayer.eachLayer(l => {
-                layer.addLayer(l);
-            });
-
+            geoJSONLayer.eachLayer(l => layer.addLayer(l));
             buildSearchIndex(allFeatures);
         })
         .catch(console.error);
@@ -559,115 +625,6 @@ function convertToPublicUrl(rawUrl) {
         return rawUrl;
     }
 }
-
-/* function loadGeoJSON(url, layer, style, labelField, layerType = 'polygon') {
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            layer.clearLayers();
-
-            const geoJSONLayer = L.geoJSON(data, {
-                pointToLayer: (feature, latlng) => {
-                    if (layerType === 'point') {
-                        const marker = L.marker(latlng, {
-                            icon: style?.icon ? style.icon(map.getZoom()) : undefined,
-                            pane: 'points'
-                        });
-                        pointLayers.push(marker);
-                        feature.layerType = 'point';
-                        feature.layer = marker;
-                        allFeatures.push(feature);
-                        return marker;
-                    }
-                    return L.circleMarker(latlng, style);
-                },
-                style: style,
-                onEachFeature: (feature, layer) => {
-                    layer.feature = feature;
-                    feature.layer = layer;
-                    feature.layerType = layerType;
-                    allFeatures.push(feature);
-
-                    if (layerType === 'polyline') {
-                        allPolylineFeatures.push(feature);
-                    }
-
-                    if (feature.properties) {
-                        let popupContent = '<div class="info"><h4>Información</h4>';
-                        for (const prop in feature.properties) {
-                            popupContent += `<b>${prop}:</b> ${feature.properties[prop]}<br>`;
-                        }
-                        popupContent += '</div>';
-                        layer.bindPopup(popupContent);
-                    }
-
-                    // === ADD LABELS FOR POLYLINES AND POLYGONS ===
-                    if (labelField && feature.properties?.[labelField]) {
-                        const position = layer.getBounds?.().getCenter() || layer.getLatLng?.();
-                        if (!position) return;
-
-                        const labelColor = layerType === 'polygon' ? '#000307' :
-                                          layerType === 'polyline' ? style.color : '#ff0000';
-
-                        const label = L.marker(position, {
-                            icon: L.divIcon({
-                                className: 'map-label',
-                                html: `<div style="font-size:12px;font-weight:bold;color:${labelColor};
-                                    text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff;">
-                                    ${feature.properties[labelField]}</div>`,
-                                iconSize: [100, 20],
-                                pane: 'labels'
-                            }),
-                            interactive: false
-                        });
-
-                        const labelLayer = layerType === 'polygon' ? layers.polygonLabels :
-                                           layerType === 'polyline' ? layers.polylineLabels :
-                                           layers.pointLabels;
-
-                        labelLayer.addLayer(label);
-                    }
-
-                    const highlightStyle = {
-                        weight: style.weight + 2 || 3,
-                        color: style.color || '#f00',
-                        opacity: 1,
-                        dashArray: ''
-                    };
-
-                    layer.on('mouseover', function () {
-                        this.setStyle(highlightStyle);
-                        this.bringToFront();
-
-                        if (feature.properties) {
-                            layer.bindTooltip(
-                                Object.entries(feature.properties)
-                                    .map(([key, value]) => `<b>${key}:</b> ${value}`)
-                                    .join('<br>'),
-                                {
-                                    direction: 'top',
-                                    permanent: false,
-                                    className: 'custom-tooltip'
-                                }
-                            ).openTooltip();
-                        }
-                    });
-
-                    layer.on('mouseout', function () {
-                        layer.setStyle(style);
-                        layer.unbindTooltip();
-                    });
-                }
-            });
-            geoJSONLayer.eachLayer(l => {
-                layer.addLayer(l);
-            });
-
-            buildSearchIndex(allFeatures);
-        })
-        .catch(console.error);
-} */
-
 
 // === Checkbox logic to lazily load building and point labels ===
 const buildingLabelLayer = L.layerGroup();
@@ -741,17 +698,14 @@ setupLabelToggle('CruceAereo-labels-toggle', 'geojs/CRUCE_AEREO.geojson', CruceA
 setupLabelToggle('CruceSubfluvial-labels-toggle', 'geojs/CRUCE_SUBFLUVIAL.geojson', CruceSubfluvialLabelLayer, 'PK', styles.CruceSubfluvial, latlng => map.getBounds().contains(latlng));
 
 // Load GeoJSON data
-// loadGeoJSON('geojs/Edificacion_Cor_D2.geojson', layers.point, {}, 'PK', 'point');
-loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV_20250702.geojson', layers.polyline1, styles.polyline1, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_IEDDV.geojson', layers.polyline2, styles.polyline2, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/DUCTO_PROGRAMADO_IEDDV.geojson', layers.polyline3, styles.polyline3, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/DUCTO_RECORRIDO_NT_20250702.geojson', layers.polyline4, styles.polyline4, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/DUCTO_ESTRUCTURACION_NT.geojson', layers.polyline5, styles.polyline5, 'TRAMO', 'polyline');
-loadGeoJSON('geojs/DUCTO_PROGRAMADO_NT.geojson', layers.polyline6, styles.polyline6, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/2026/RECORRIDO_2026.geojson', layers.programacion, getProgramacionStyle, 'TRAMO', 'polyline');
 loadGeoJSON('geojs/AnchoDDV.geojson', layers.AnchoDDV, styles.AnchoDDV, 'TRAMO', 'polygon');
 loadGeoJSON('geojs/Buffer200.geojson', layers.Buffer200, styles.Buffer200, 'TRAMO', 'polygon');
+loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV_20250702.geojson', layers.polyline1, styles.polyline1, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/DUCTO_RECORRIDO_NT_20250702.geojson', layers.polyline2, styles.polyline2, 'TRAMO', 'polyline');
 
 // Update point icons on zoom
+
 map.on('zoomend', function() {
     const zoom = map.getZoom();
     pointLayers.forEach(marker => {
@@ -997,13 +951,9 @@ function setupToggle(id, layer) {
 }
 
 // setupToggle('point-layer-toggle', layers.point);
+setupToggle('programacion-layer-toggle', layers.programacion);
 setupToggle('polyline1-layer-toggle', layers.polyline1);
 setupToggle('polyline2-layer-toggle', layers.polyline2);
-setupToggle('polyline3-layer-toggle', layers.polyline3);
-setupToggle('polyline4-layer-toggle', layers.polyline4);
-setupToggle('polyline5-layer-toggle', layers.polyline5);
-setupToggle('polyline6-layer-toggle', layers.polyline6);
-// setupToggle('polyline4-layer-toggle', layers.polyline4);
 // setupToggle('polygon-layer-toggle', layers.polygon);
 // setupToggle('point-labels-toggle', layers.pointLabels);
 setupToggle('polyline-labels-toggle', layers.polylineLabels);

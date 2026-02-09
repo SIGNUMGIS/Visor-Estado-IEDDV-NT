@@ -176,17 +176,45 @@ body {
 .polygon-color { background: #EDED0E; }
 .AnchoDDV-color { background: #92067bff; }
 .Buffer200-color { background: #c683ecff; }
-.polyline1-color { background: #1df00a; }
-.polyline2-color { background: #fac107; }
-.polyline3-color { background: #e4a0d8; }
+.polyline1-color { background: #28ec0eff; }
+.polyline2-color { background: #0c9ba0ff; }
+/* .polyline3-color { background: #e4a0d8; }
 .polyline4-color { background: #0E30EE; }
 .polyline5-color { background: #0ed4ee; }
-.polyline6-color { background: #9c0eee; }
+.polyline6-color { background: #9c0eee; } */
 .point-color { background: #EE8C0B; }
 .evento-color { background: #f50e0eff; }
 .CruceAereo-color { background: #10c7d4ff; }
 .CruceSubfluvial-color { background: #0848f7ff; }
- 
+
+/* For Programacion Symbology */
+/* .programacionColors-color { background: linear-gradient(0deg, #12c002ff, #fac107, #e4a0d8, #0E30EE, #0ed4ee, #9c0eee); } */
+.layer-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.programacion-legend-items {
+    margin-left: 26px;
+    margin-top: 6px;
+}
+
+.programacion-legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.programacion-legend-color {
+    width: 16px;
+    height: 6px;
+    margin-right: 6px;
+    border-radius: 2px;
+}
+
+
 
 /* Label Icons */
 .layer-toggle i {
@@ -617,3 +645,23 @@ body {
   border-radius: 6px;
   box-shadow: 0 0 4px rgba(0,0,0,0.2);
 }
+
+/* .layer-color.programacion-legend {
+    width: 26px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-right: 6px;
+    background: linear-gradient(
+        to right,
+        #1b9e77,
+        #66a61e,
+        #a6d854,
+        #d9f0a3,
+        #1f78b4,
+        #6a3d9a,
+        #e31a1c,
+        #ff7f00
+    );
+}
+ */
