@@ -202,9 +202,11 @@ const styles = {
 // SYMBOLOGY COLOR FOR PROGRAMACION LAYER
 const programacionColors = {
     'IEDDV_RECORRIDO': '#12c002ff',
+    'IEDDV_INTERVENTORIA': '#aae40b',
     'IEDDV_ESTRUCTURACION': '#fac107',
     'IEDDV_PROGRAMADO': '#e4a0d8',
     'NT_RECORRIDO': '#0E30EE',
+    'NT_INTERVENTORIA': '#76b3c2',
     'NT_ESTRUCTURACION': '#0ed4ee',
     'NT_PROGRAMADO': '#9c0eee'
 };
@@ -698,7 +700,7 @@ setupLabelToggle('CruceAereo-labels-toggle', 'geojs/CRUCE_AEREO.geojson', CruceA
 setupLabelToggle('CruceSubfluvial-labels-toggle', 'geojs/CRUCE_SUBFLUVIAL.geojson', CruceSubfluvialLabelLayer, 'PK', styles.CruceSubfluvial, latlng => map.getBounds().contains(latlng));
 
 // Load GeoJSON data
-loadGeoJSON('geojs/2026/RECORRIDO_2026.geojson', layers.programacion, getProgramacionStyle, 'TRAMO', 'polyline');
+loadGeoJSON('geojs/2026/RECORRIDO_20260304.geojson', layers.programacion, getProgramacionStyle, 'TRAMO', 'polyline');
 loadGeoJSON('geojs/AnchoDDV.geojson', layers.AnchoDDV, styles.AnchoDDV, 'TRAMO', 'polygon');
 loadGeoJSON('geojs/Buffer200.geojson', layers.Buffer200, styles.Buffer200, 'TRAMO', 'polygon');
 loadGeoJSON('geojs/DUCTO_RECORRIDO_IEDDV_20250702.geojson', layers.polyline1, styles.polyline1, 'TRAMO', 'polyline');
