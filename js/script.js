@@ -404,7 +404,7 @@ setupLazyToggle('hProcesoMenor-layer-toggle', hProcesoMenorCluster, {
 });
 
 setupLazyToggle('hEvento-layer-toggle', hEventoCluster, {
-  lazyUrl: 'geojs/Hallazgos/URL_H_Eventos.geojson',
+  lazyUrl: 'geojs/Hallazgos/2026/URL_H_Eventos.geojson',
   style: styles.hEvento,
   labelField: 'PK',
   layerType: 'point'
