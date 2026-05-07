@@ -390,21 +390,21 @@ setupLazyToggle('edificacion-layer-toggle', edificacionCluster,{
 });
 
 setupLazyToggle('hallazgos-layer-toggle', hallazgoCluster, {
-  lazyUrl: 'geojs/Hallazgos/URL_Hallazgos.geojson',
+  lazyUrl: 'geojs/Hallazgos/2026/URL_H_Hallazgos.geojson',
   style: styles.hallazgo,
   labelField: 'PK',
   layerType: 'point'
 });
 
 setupLazyToggle('hProcesoMenor-layer-toggle', hProcesoMenorCluster, {
-  lazyUrl: 'geojs/Hallazgos/URL_ProcesosMenores.geojson',
+  lazyUrl: 'geojs/Hallazgos/2026/URL_H_ProcesoMenor.geojson',
   style: styles.hProcesoMenor,
   labelField: 'PK',
   layerType: 'point'
 });
 
 setupLazyToggle('hEvento-layer-toggle', hEventoCluster, {
-  lazyUrl: 'geojs/Hallazgos/URL_Eventos.geojson',
+  lazyUrl: 'geojs/Hallazgos/URL_H_Eventos.geojson',
   style: styles.hEvento,
   labelField: 'PK',
   layerType: 'point'
@@ -692,9 +692,9 @@ setupLabelToggle('edificacion-labels-toggle', 'geojs/OCUPACION.geojson', buildin
 setupLabelToggle('eventos-labels-toggle', 'geojs/EVENTO_GEOTECNICO.geojson', eventoLabelLayer, 'PK_PAT', styles.evento, latlng => map.getBounds().contains(latlng));
 setupLabelToggle('procesomenor-labels-toggle', 'geojs/PROCESO_MENOR.geojson', pointLabelLayer, 'PK_PAT', styles.procesomenor, latlng => map.getBounds().contains(latlng));
 
-setupLabelToggle('hallazgos-labels-toggle', 'geojs/Hallazgos/URL_Hallazgos.geojson', hallazgosLabelLayer, 'PK', styles.hallazgo, latlng => map.getBounds().contains(latlng));
-setupLabelToggle('hProcesoMenor-labels-toggle', 'geojs/Hallazgos/URL_ProcesosMenores.geojson', hProcesoMenorLabelLayer, 'PK', styles.hProcesoMenor, latlng => map.getBounds().contains(latlng));
-setupLabelToggle('hEvento-labels-toggle', 'geojs/Hallazgos/URL_Eventos.geojson', hEventoLabelLayer, 'PK', styles.hEvento, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('hallazgos-labels-toggle', 'geojs/Hallazgos/2026/URL_H_Hallazgos.geojson', hallazgosLabelLayer, 'PK', styles.hallazgo, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('hProcesoMenor-labels-toggle', 'geojs/Hallazgos/2026/URL_H_ProcesoMenor.geojson', hProcesoMenorLabelLayer, 'PK', styles.hProcesoMenor, latlng => map.getBounds().contains(latlng));
+setupLabelToggle('hEvento-labels-toggle', 'geojs/Hallazgos/2026/URL_H_Eventos.geojson', hEventoLabelLayer, 'PK', styles.hEvento, latlng => map.getBounds().contains(latlng));
 
 setupLabelToggle('CruceAereo-labels-toggle', 'geojs/CRUCE_AEREO.geojson', CruceAereoLabelLayer, 'PK', styles.CruceAereo, latlng => map.getBounds().contains(latlng));
 setupLabelToggle('CruceSubfluvial-labels-toggle', 'geojs/CRUCE_SUBFLUVIAL.geojson', CruceSubfluvialLabelLayer, 'PK', styles.CruceSubfluvial, latlng => map.getBounds().contains(latlng));
